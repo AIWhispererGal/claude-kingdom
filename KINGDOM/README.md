@@ -59,6 +59,21 @@ Set a different port with `PORT=9000 node KINGDOM/kingdom-server.js`.
 > The original standalone pages (`web/index.html`, `web/dashboard.html`) still work as static
 > views via `npx serve KINGDOM/web`, but `app.html` served by `kingdom-server.js` supersedes them.
 
+## Install into a project
+
+```bash
+node /path/to/KINGDOM/kingdom.js init ~/work/my-api
+```
+This copies a self-contained Kingdom into `~/work/my-api/.kingdom/` and generates real Claude Code
+subagents in `~/work/my-api/.claude/agents/` (one per family, with **enforced tool limits** — a Detective
+is read-only, ARMARIUS alone may run git), a managed block in `CLAUDE.md`, a safe `.claude/settings.json`,
+and a `PROJECT.json` binding. In that project, your Claude Code session becomes the orchestrator and
+dispatches the court via the Agent tool (`subagent_type: detective-greymantle`, …).
+
+After founding or retiring families, run `node .kingdom/kingdom.js sync-agents` from the project root to
+refresh the court. `node .kingdom/kingdom.js init <dir> --reinstall` upgrades the Kingdom's code while
+**preserving** that project's accumulated history and honors.
+
 ## Map of the realm
 
 | Path | What lives here |

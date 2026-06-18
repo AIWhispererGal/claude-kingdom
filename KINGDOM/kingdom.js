@@ -86,7 +86,9 @@ function banner() {
 }
 
 function cmdHelp() {
+  const { KINGDOM_VERSION } = require('./agents/agent_gen.js');
   console.log(banner());
+  console.log(dim(`  House ClaudeCode — Kingdom v${KINGDOM_VERSION}`));
   console.log('');
   console.log(bold('  Steward of the realm. Summon courts, read the chronicle, keep the honors.'));
   console.log('');
@@ -101,6 +103,8 @@ function cmdHelp() {
     ['new-role NAME', 'Scaffold a new agent ROLE'],
     ['new-family ROLE NAME', 'Found a new FAMILY lineage under a role'],
     ['extinct ROLE FAMILY [--reason T]', 'Declare a family extinct (skills archived)'],
+    ['init [dir] [--reinstall]', 'Install a self-contained Kingdom into a project'],
+    ['sync-agents', "Regenerate a project's court after roster changes"],
     ['help', 'Show this banner'],
   ];
   for (const [cmd, desc] of rows) {
@@ -864,6 +868,152 @@ function cmdExtinct(argv) {
 }
 
 // ---------------------------------------------------------------------------
+// filesystem helpers (exported for tests and future init command)
+// ---------------------------------------------------------------------------
+function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+function copyTree(src, dst, exclude) {
+  fs.mkdirSync(dst, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const s = path.join(src, entry.name);
+    const d = path.join(dst, entry.name);
+    if (exclude && exclude(s, entry)) continue;
+    if (entry.isDirectory()) copyTree(s, d, exclude);
+    else if (entry.isFile()) fs.copyFileSync(s, d);
+  }
+}
+
+function writeManagedBlock(file, startMark, endMark, blockBody) {
+  const block = `${startMark}\n${blockBody}\n${endMark}`;
+  let content = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  const re = new RegExp(escapeRe(startMark) + '[\\s\\S]*?' + escapeRe(endMark));
+  if (re.test(content)) content = content.replace(re, block);
+  else content = content ? content.replace(/\s*$/, '\n\n') + block + '\n' : block + '\n';
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, content, 'utf8');
+}
+
+function mergeSettingsAllow(file, entries, note) {
+  let settings = {};
+  if (fs.existsSync(file)) {
+    try { settings = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { settings = {}; }
+  }
+  if (!settings.permissions) settings.permissions = {};
+  if (!Array.isArray(settings.permissions.allow)) settings.permissions.allow = [];
+  const have = new Set(settings.permissions.allow);
+  for (const e of entries) if (!have.has(e)) { settings.permissions.allow.push(e); have.add(e); }
+  if (note && !settings.$kingdom) settings.$kingdom = note;
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(settings, null, 2) + '\n', 'utf8');
+}
+
+// ---------------------------------------------------------------------------
+// refreshCourt — shared helper used by both init and sync-agents
+// ---------------------------------------------------------------------------
+
+// Regenerate a project's court subagents + managed CLAUDE.md block + settings.allow,
+// reading from the project's OWN copied .kingdom (so it reflects that project's roster).
+// Returns { genResult, AGt, court }.
+function refreshCourt(projectRoot, dotK, AGt) {
+  AGt = AGt || require(path.join(dotK, 'agents', 'agent_gen.js'));
+  const agentsDir = path.join(projectRoot, '.claude', 'agents');
+  const genResult = AGt.generateAllSubagents(agentsDir, { prune: true });
+  const reg = readJSON(path.join(dotK, 'agents', 'REGISTRY.json'));
+  if (reg.__missing || reg.__error) {
+    throw new Error(`Project REGISTRY.json is missing or malformed${reg.__error ? ': ' + reg.__error : ''}`);
+  }
+  const court = AGt.listActiveFamilies(reg).map((a) => `${a.role.toLowerCase()}-${a.family.toLowerCase()}`);
+  writeManagedBlock(path.join(projectRoot, 'CLAUDE.md'), AGt.MARKERS.start, AGt.MARKERS.end, AGt.claudeBlock(court));
+  mergeSettingsAllow(
+    path.join(projectRoot, '.claude', 'settings.json'),
+    AGt.settingsAllowEntries(court),
+    'Managed by the Living Kingdom. Broaden permissions here as you trust the realm.'
+  );
+  return { genResult, AGt, court };
+}
+
+// ---------------------------------------------------------------------------
+// init
+// ---------------------------------------------------------------------------
+function cmdInit(args) {
+  const SRC = gen.KINGDOM_ROOT;
+  const reinstall = args.includes('--reinstall');
+  const pos = args.filter((a) => !a.startsWith('--'));
+  const target = path.resolve(pos[0] || process.cwd());
+
+  if (!fs.existsSync(target) || !fs.statSync(target).isDirectory()) {
+    console.error('⚠ target is not a directory: ' + target); process.exitCode = 1; return;
+  }
+  if (target === SRC || SRC.startsWith(target + path.sep) || target.startsWith(SRC + path.sep)) {
+    console.error('⚠ refusing to init a Kingdom into itself or a nested path.'); process.exitCode = 1; return;
+  }
+  const dotK = path.join(target, '.kingdom');
+  const exists = fs.existsSync(dotK);
+  if (exists && !reinstall) {
+    console.error('⚠ Already initialized. Use `sync-agents` to refresh the court, or `init --reinstall` to upgrade code (memory preserved).');
+    process.exitCode = 1; return;
+  }
+
+  const dataPrefixes = ['history', 'honors', path.join('agents', 'families')];
+  const dataFiles = new Set([path.join('agents', 'REGISTRY.json'), 'PROJECT.json']);
+  const exclude = (s, entry) => {
+    const rel = path.relative(SRC, s);
+    if (entry.name === '.git') return true;
+    if (rel === path.join('summons', 'output') || rel.startsWith(path.join('summons', 'output') + path.sep)) return true;
+    if (reinstall) {
+      if (dataFiles.has(rel)) return true;
+      for (const d of dataPrefixes) if (rel === d || rel.startsWith(d + path.sep)) return true;
+    }
+    return false;
+  };
+
+  copyTree(SRC, dotK, exclude);
+  fs.mkdirSync(path.join(dotK, 'summons', 'output'), { recursive: true });
+  if (!fs.existsSync(path.join(dotK, 'summons', 'output', '.gitkeep'))) {
+    fs.writeFileSync(path.join(dotK, 'summons', 'output', '.gitkeep'), '');
+  }
+
+  // Generate from the PROJECT's copied module so the roster reflects the project (esp. on --reinstall).
+  const AGt = require(path.join(dotK, 'agents', 'agent_gen.js'));
+  const projFile = path.join(dotK, 'PROJECT.json');
+  if (!fs.existsSync(projFile)) {
+    fs.writeFileSync(projFile, JSON.stringify({
+      project_name: path.basename(target),
+      project_path: target,
+      initialized_at: new Date().toISOString(),
+      kingdom_version: AGt.KINGDOM_VERSION,
+      source_kingdom: SRC,
+    }, null, 2) + '\n');
+  }
+
+  // AGt already required above for PROJECT.json's version
+  const { genResult } = refreshCourt(target, dotK, AGt);
+
+  console.log(`🏰 Kingdom ${reinstall ? 're-installed' : 'installed'} in ${target}`);
+  console.log(`   ${genResult.written.length} court subagents in .claude/agents/${genResult.removed.length ? ` (${genResult.removed.length} pruned)` : ''}`);
+  console.log('   CLAUDE.md managed block + .claude/settings.json updated; .kingdom/PROJECT.json bound.');
+  console.log('   Next: `node .kingdom/kingdom-server.js` for the web, or open Claude Code here and summon a court.');
+}
+
+// ---------------------------------------------------------------------------
+// sync-agents
+// ---------------------------------------------------------------------------
+function cmdSyncAgents() {
+  const root = gen.KINGDOM_ROOT;
+  let dotK, projectRoot;
+  if (path.basename(root) === '.kingdom') {
+    dotK = root; projectRoot = path.dirname(root);
+  } else if (fs.existsSync(path.join(process.cwd(), '.kingdom'))) {
+    projectRoot = process.cwd(); dotK = path.join(projectRoot, '.kingdom');
+  } else {
+    console.error("⚠ sync-agents must run inside an init'd project (where a .kingdom/ exists). Try: node .kingdom/kingdom.js sync-agents");
+    process.exitCode = 1; return;
+  }
+  const { genResult } = refreshCourt(projectRoot, dotK);
+  console.log(`🔄 Court synced: ${genResult.written.length} active${genResult.removed.length ? `, ${genResult.removed.length} removed` : ''}.`);
+}
+
+// ---------------------------------------------------------------------------
 // dispatch
 // ---------------------------------------------------------------------------
 async function main() {
@@ -883,6 +1033,8 @@ async function main() {
       case 'new-role': cmdNewRole(rest); break;
       case 'new-family': cmdNewFamily(rest); break;
       case 'extinct': cmdExtinct(rest); break;
+      case 'init': cmdInit(rest); break;
+      case 'sync-agents': cmdSyncAgents(); break;
       case 'help':
       case '--help':
       case '-h':
@@ -901,4 +1053,8 @@ async function main() {
   }
 }
 
-main();
+if (require.main === module) {
+  main();
+} else {
+  module.exports = { copyTree, writeManagedBlock, mergeSettingsAllow, escapeRe };
+}
