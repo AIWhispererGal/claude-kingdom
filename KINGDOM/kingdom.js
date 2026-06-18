@@ -864,6 +864,46 @@ function cmdExtinct(argv) {
 }
 
 // ---------------------------------------------------------------------------
+// filesystem helpers (exported for tests and future init command)
+// ---------------------------------------------------------------------------
+function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+function copyTree(src, dst, exclude) {
+  fs.mkdirSync(dst, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const s = path.join(src, entry.name);
+    const d = path.join(dst, entry.name);
+    if (exclude && exclude(s, entry)) continue;
+    if (entry.isDirectory()) copyTree(s, d, exclude);
+    else if (entry.isFile()) fs.copyFileSync(s, d);
+  }
+}
+
+function writeManagedBlock(file, startMark, endMark, blockBody) {
+  const block = `${startMark}\n${blockBody}\n${endMark}`;
+  let content = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  const re = new RegExp(escapeRe(startMark) + '[\\s\\S]*?' + escapeRe(endMark));
+  if (re.test(content)) content = content.replace(re, block);
+  else content = content ? content.replace(/\s*$/, '\n\n') + block + '\n' : block + '\n';
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, content, 'utf8');
+}
+
+function mergeSettingsAllow(file, entries, note) {
+  let settings = {};
+  if (fs.existsSync(file)) {
+    try { settings = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { settings = {}; }
+  }
+  if (!settings.permissions) settings.permissions = {};
+  if (!Array.isArray(settings.permissions.allow)) settings.permissions.allow = [];
+  const have = new Set(settings.permissions.allow);
+  for (const e of entries) if (!have.has(e)) { settings.permissions.allow.push(e); have.add(e); }
+  if (note && !settings.$kingdom) settings.$kingdom = note;
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(settings, null, 2) + '\n', 'utf8');
+}
+
+// ---------------------------------------------------------------------------
 // dispatch
 // ---------------------------------------------------------------------------
 async function main() {
@@ -901,4 +941,8 @@ async function main() {
   }
 }
 
-main();
+if (require.main === module) {
+  main();
+} else {
+  module.exports = { copyTree, writeManagedBlock, mergeSettingsAllow, escapeRe };
+}
