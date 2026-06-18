@@ -904,6 +904,78 @@ function mergeSettingsAllow(file, entries, note) {
 }
 
 // ---------------------------------------------------------------------------
+// init
+// ---------------------------------------------------------------------------
+function cmdInit(args) {
+  const SRC = gen.KINGDOM_ROOT;
+  const reinstall = args.includes('--reinstall');
+  const pos = args.filter((a) => !a.startsWith('--'));
+  const target = path.resolve(pos[0] || process.cwd());
+
+  if (!fs.existsSync(target) || !fs.statSync(target).isDirectory()) {
+    console.error('⚠ target is not a directory: ' + target); process.exitCode = 1; return;
+  }
+  if (target === SRC || SRC.startsWith(target + path.sep) || target.startsWith(SRC + path.sep)) {
+    console.error('⚠ refusing to init a Kingdom into itself or a nested path.'); process.exitCode = 1; return;
+  }
+  const dotK = path.join(target, '.kingdom');
+  const exists = fs.existsSync(dotK);
+  if (exists && !reinstall) {
+    console.error('⚠ Already initialized. Use `sync-agents` to refresh the court, or `init --reinstall` to upgrade code (memory preserved).');
+    process.exitCode = 1; return;
+  }
+
+  const dataPrefixes = ['history', 'honors', path.join('agents', 'families')];
+  const dataFiles = new Set([path.join('agents', 'REGISTRY.json'), 'PROJECT.json']);
+  const exclude = (s, entry) => {
+    const rel = path.relative(SRC, s);
+    if (entry.name === '.git') return true;
+    if (rel === path.join('summons', 'output') || rel.startsWith(path.join('summons', 'output') + path.sep)) return true;
+    if (reinstall) {
+      if (dataFiles.has(rel)) return true;
+      for (const d of dataPrefixes) if (rel === d || rel.startsWith(d + path.sep)) return true;
+    }
+    return false;
+  };
+
+  copyTree(SRC, dotK, exclude);
+  fs.mkdirSync(path.join(dotK, 'summons', 'output'), { recursive: true });
+  if (!fs.existsSync(path.join(dotK, 'summons', 'output', '.gitkeep'))) {
+    fs.writeFileSync(path.join(dotK, 'summons', 'output', '.gitkeep'), '');
+  }
+
+  // Generate from the PROJECT's copied module so the roster reflects the project (esp. on --reinstall).
+  const AGt = require(path.join(dotK, 'agents', 'agent_gen.js'));
+  const projFile = path.join(dotK, 'PROJECT.json');
+  if (!fs.existsSync(projFile)) {
+    fs.writeFileSync(projFile, JSON.stringify({
+      project_name: path.basename(target),
+      project_path: target,
+      initialized_at: new Date().toISOString(),
+      kingdom_version: AGt.KINGDOM_VERSION,
+      source_kingdom: SRC,
+    }, null, 2) + '\n');
+  }
+
+  const agentsDir = path.join(target, '.claude', 'agents');
+  const genResult = AGt.generateAllSubagents(agentsDir, { prune: true });
+  const reg = JSON.parse(fs.readFileSync(path.join(dotK, 'agents', 'REGISTRY.json'), 'utf8'));
+  const court = AGt.listActiveFamilies(reg).map((a) => `${a.role.toLowerCase()}-${a.family.toLowerCase()}`);
+
+  writeManagedBlock(path.join(target, 'CLAUDE.md'), AGt.MARKERS.start, AGt.MARKERS.end, AGt.claudeBlock(court));
+  mergeSettingsAllow(
+    path.join(target, '.claude', 'settings.json'),
+    AGt.settingsAllowEntries(court),
+    'Managed by the Living Kingdom. Broaden permissions here as you trust the realm.'
+  );
+
+  console.log(`🏰 Kingdom ${reinstall ? 're-installed' : 'installed'} in ${target}`);
+  console.log(`   ${genResult.written.length} court subagents in .claude/agents/${genResult.removed.length ? ` (${genResult.removed.length} pruned)` : ''}`);
+  console.log('   CLAUDE.md managed block + .claude/settings.json updated; .kingdom/PROJECT.json bound.');
+  console.log('   Next: `node .kingdom/kingdom-server.js` for the web, or open Claude Code here and summon a court.');
+}
+
+// ---------------------------------------------------------------------------
 // dispatch
 // ---------------------------------------------------------------------------
 async function main() {
@@ -923,6 +995,7 @@ async function main() {
       case 'new-role': cmdNewRole(rest); break;
       case 'new-family': cmdNewFamily(rest); break;
       case 'extinct': cmdExtinct(rest); break;
+      case 'init': cmdInit(rest); break;
       case 'help':
       case '--help':
       case '-h':
