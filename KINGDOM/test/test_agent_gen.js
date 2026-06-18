@@ -26,4 +26,34 @@ assert(/\ntools: Read, Grep, Glob, Write, Edit, Bash\n/.test(smith.contents), 'b
 
 assert(AG.buildSubagent('NOPE', 'NONE') === null, 'unknown role returns null');
 
+const os = require('os');
+const fs2 = require('fs');
+const path2 = require('path');
+
+// listActiveFamilies skips EXTINCT
+const reg = require('../summons/generator.js').loadRegistry();
+const active = AG.listActiveFamilies(reg);
+assert(active.length === 13, 'seed roster has 13 active families');
+assert(active.some(a => a.role === 'BLACKSMITH' && a.family === 'IRONFORGE'), 'includes blacksmith/ironforge');
+const fakeReg = { families: { blacksmith: [{ name: 'X', status: 'ACTIVE' }, { name: 'Y', status: 'EXTINCT' }] } };
+assert(AG.listActiveFamilies(fakeReg).length === 1, 'EXTINCT families are excluded');
+
+// generateAllSubagents writes one file per active family into a temp dir
+const tmp = fs2.mkdtempSync(path2.join(os.tmpdir(), 'kgagents-'));
+const res = AG.generateAllSubagents(tmp, { prune: true });
+assert(res.written.length === 13, 'wrote 13 subagent files');
+assert(fs2.existsSync(path2.join(tmp, 'detective-greymantle.md')), 'detective file on disk');
+// prune removes a stale kingdom-managed agent
+fs2.writeFileSync(path2.join(tmp, 'detective-ghost.md'), '---\nname: detective-ghost\n---\n');
+const res2 = AG.generateAllSubagents(tmp, { prune: true });
+assert(res2.removed.includes('detective-ghost.md'), 'prunes stale managed agent');
+assert(!fs2.existsSync(path2.join(tmp, 'detective-ghost.md')), 'stale agent removed from disk');
+fs2.rmSync(tmp, { recursive: true, force: true });
+
+// managed config text helpers are pure
+const block = AG.claudeBlock(['detective-greymantle', 'serf-plainfield']);
+assert(/KINGDOM:START/.test(AG.MARKERS.start) && block.includes('detective-greymantle'), 'claudeBlock lists court');
+const entries = AG.settingsAllowEntries(['detective-greymantle']);
+assert(entries.includes('Agent(detective-greymantle)') && entries.includes('Read'), 'settings entries include court + base');
+
 done();

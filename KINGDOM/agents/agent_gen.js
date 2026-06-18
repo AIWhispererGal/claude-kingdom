@@ -85,4 +85,75 @@ MY VOW: I will report true findings, true counts only. ${emoji} SEAL: ⚜
   return { filename: `${name}.md`, name, contents };
 }
 
-module.exports = { KINGDOM_VERSION, TOOL_MAP, DEFAULT_TOOLS, toolsForRole, stripTitle, buildSubagent };
+const MARKERS = { start: '<!-- KINGDOM:START -->', end: '<!-- KINGDOM:END -->' };
+
+// [{role, family}] for all non-EXTINCT families in a registry object
+function listActiveFamilies(registry) {
+  const out = [];
+  const fams = (registry && registry.families) || {};
+  for (const roleKey of Object.keys(fams)) {
+    for (const f of fams[roleKey]) {
+      if (String(f.status).toUpperCase() === 'EXTINCT') continue;
+      out.push({ role: roleKey.toUpperCase(), family: f.name });
+    }
+  }
+  return out;
+}
+
+// Generate all subagent files into agentsDir. Returns { written:[name], removed:[file] }.
+function generateAllSubagents(agentsDir, opts = {}) {
+  const registry = G.loadRegistry();
+  fs.mkdirSync(agentsDir, { recursive: true });
+  const wanted = new Set();
+  const written = [];
+  for (const { role, family } of listActiveFamilies(registry)) {
+    const sub = buildSubagent(role, family);
+    if (!sub) continue;
+    wanted.add(sub.filename);
+    fs.writeFileSync(path.join(agentsDir, sub.filename), sub.contents, 'utf8');
+    written.push(sub.name);
+  }
+  const removed = [];
+  if (opts.prune) {
+    const roleNames = (registry.roles || []).map((r) => r.name.toLowerCase());
+    for (const f of fs.readdirSync(agentsDir)) {
+      if (!f.endsWith('.md') || wanted.has(f)) continue;
+      const base = f.replace(/\.md$/, '');
+      if (roleNames.some((rn) => base.startsWith(rn + '-'))) {
+        fs.unlinkSync(path.join(agentsDir, f));
+        removed.push(f);
+      }
+    }
+  }
+  return { written, removed };
+}
+
+// The managed CLAUDE.md block body (between MARKERS). courtNames = ['detective-greymantle', ...]
+function claudeBlock(courtNames) {
+  const list = courtNames.map((n) => `  - \`${n}\``).join('\n');
+  return `## 🏰 THE LIVING KINGDOM
+You are the orchestrator — a noble of House ClaudeCode — for this project's Kingdom (in \`.kingdom/\`).
+
+**Summon a court:** run \`node .kingdom/kingdom.js summon\` to compose a vow-bearing brief, or compose one directly.
+
+**Your court** — dispatch each as a real subagent via the Agent tool (\`subagent_type: <name>\`):
+${list || '  - (no active families)'}
+
+**The laws:** INVESTIGATE before you act · VERIFY every agent report (check their math) · REMEMBER.
+- ARMARIUS runs ALL git — you never git directly.
+- End of session: record it with \`node .kingdom/kingdom.js record\`, then grant or petition honors.
+- Full doctrine: \`.kingdom/DOCTRINE.md\`. History & honors live under \`.kingdom/history/\` and \`.kingdom/honors/\`.
+- The web Throne Room: \`node .kingdom/kingdom-server.js\` → http://localhost:8080`;
+}
+
+// settings.json permissions.allow entries for an init'd project
+function settingsAllowEntries(courtNames) {
+  const base = ['Read', 'Grep', 'Glob', 'Edit', 'Write', 'Bash(git:*)', 'Bash(npm:*)', 'Bash(node:*)'];
+  return base.concat(courtNames.map((n) => `Agent(${n})`));
+}
+
+module.exports = {
+  KINGDOM_VERSION, TOOL_MAP, DEFAULT_TOOLS, MARKERS,
+  toolsForRole, stripTitle, buildSubagent,
+  listActiveFamilies, generateAllSubagents, claudeBlock, settingsAllowEntries,
+};
