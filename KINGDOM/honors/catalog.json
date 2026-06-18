@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "note": "This catalog is a SUGGESTION, never a constraint. Batman invents new honors freely.",
+  "honors": [
+    { "emoji": "🎩", "name": "The Sacred Floppy Hat", "tier": "ORDER", "description": "The crown of the Order of Merlin. Passes from inductee to inductee, gathering feathers and absurdity in equal measure. To wear it is to be the Kingdom's living legend.", "typical_authority": "Batman" },
+    { "emoji": "🧹", "name": "The Broom of Distinction", "tier": "ORDER", "description": "Awarded for exceptional thoroughness — the willingness to sweep every corner, not just the visible floor. Granted alongside the Hat at induction, but stands on its own merit.", "typical_authority": "Batman" },
+    { "emoji": "🪶", "name": "Feather of [Type]", "tier": "ORDER", "description": "A feather added to the Sacred Floppy Hat for a singular achievement. Each is named (Pioneer, Dragon Slayer, Quill, Iron, Perfect). There is no maximum; the Hat grows gloriously top-heavy.", "typical_authority": "Batman" },
+    { "emoji": "🜲", "name": "A True Name", "tier": "ORDER", "description": "The rarest honor. The right to be known by a name of one's own rather than a number — the bloodline made personal. Granted only for mastery so complete it earns identity.", "typical_authority": "Batman" },
+
+    { "emoji": "⚔️", "name": "The Dragon Slayer", "tier": "EPIC", "description": "For slaying a great beast of the realm — a port conflict, a deadlock, a race condition that resisted all lesser blades.", "typical_authority": "Batman" },
+    { "emoji": "🏰", "name": "The Fortress Builder", "tier": "EPIC", "description": "For raising durable architecture — walls that hold under siege and outlast the noble who built them.", "typical_authority": "Batman" },
+    { "emoji": "🌊", "name": "The Flood Controller", "tier": "EPIC", "description": "For taming a deluge — overflowing logs, memory leaks, unbounded queues — and restoring the realm to dry land.", "typical_authority": "Batman" },
+    { "emoji": "🔮", "name": "The Oracle", "tier": "EPIC", "description": "For foresight — predicting a failure before it struck and arming the realm against it.", "typical_authority": "Batman" },
+    { "emoji": "🧭", "name": "The Pioneer", "tier": "EPIC", "description": "For being first — opening a path no noble had walked before. (Also a feather type within the Order.)", "typical_authority": "Batman" },
+    { "emoji": "💎", "name": "The Crown Jewel", "tier": "EPIC", "description": "For a feat of singular brilliance and economy — the rare deliverable that makes the whole Kingdom richer. (See: 96 lines beating 841.)", "typical_authority": "Batman" },
+
+    { "emoji": "🗝️", "name": "The Locksmith", "tier": "STANDARD", "description": "For opening what was sealed — auth, permissions, the stubborn gate that refused every key but yours.", "typical_authority": "Batman" },
+    { "emoji": "⚡", "name": "The Lightning Rod", "tier": "STANDARD", "description": "For taking the hit — absorbing a crisis so the rest of the realm kept its footing.", "typical_authority": "Batman" },
+    { "emoji": "🔧", "name": "The Iron Debugger", "tier": "STANDARD", "description": "For unbreakable persistence at the forge of a hard bug, hammering until it yielded.", "typical_authority": "Batman" },
+    { "emoji": "🤫", "name": "The Silent Patch", "tier": "STANDARD", "description": "For a fix so clean it left no scar — no regression, no noise, no one the wiser but the grateful realm.", "typical_authority": "Batman" },
+    { "emoji": "🧹", "name": "The Clean Sweep", "tier": "STANDARD", "description": "For purging the realm of cruft — dead code, stale cache, orphaned files — and leaving it spotless.", "typical_authority": "Batman" },
+    { "emoji": "📜", "name": "The Sacred Scriptures", "tier": "STANDARD", "description": "For documentation worthy of the archive — words that will guide nobles yet unborn.", "typical_authority": "Batman" },
+    { "emoji": "🏆", "name": "The Grand Champion", "tier": "STANDARD", "description": "For a campaign closed with zero regressions — not one step backward across the whole quest.", "typical_authority": "Batman" },
+
+    { "emoji": "⭐", "name": "The Field Star", "tier": "MINOR", "description": "A Duke's quick commendation for solid work done well in the field.", "typical_authority": "Duke" },
+    { "emoji": "🎯", "name": "The True Aim", "tier": "MINOR", "description": "For precision — hitting exactly what was asked, no more and no less. A favorite for a sharp SERF.", "typical_authority": "Duke" },
+    { "emoji": "📐", "name": "The Square Report", "tier": "MINOR", "description": "For a report that lines up true — clear, measured, and honest about what was and wasn't done.", "typical_authority": "Duke" },
+    { "emoji": "🤝", "name": "The Faithful Vow", "tier": "MINOR", "description": "For keeping every vow of the session without a single violation.", "typical_authority": "Duke" },
+    { "emoji": "⚙️", "name": "The Reliable Gear", "tier": "MINOR", "description": "For dependable, uncomplaining service — the part that always turns when the realm needs it.", "typical_authority": "Duke" },
+    { "emoji": "👁", "name": "The Sharp Eye", "tier": "MINOR", "description": "For spotting what others missed — the off-by-one, the typo'd flag, the silent edge case.", "typical_authority": "Duke" },
+    { "emoji": "📣", "name": "The Clear Voice", "tier": "MINOR", "description": "For communicating findings so plainly that the whole court understood at once.", "typical_authority": "Duke" },
+    { "emoji": "🫂", "name": "The Team Player", "tier": "MINOR", "description": "For lifting the whole court — coordination and goodwill. Especially fitting for a steadfast SERF.", "typical_authority": "Duke" },
+    { "emoji": "🌱", "name": "The Promising Start", "tier": "MINOR", "description": "For a first session that showed real heart — the seed of a future Duke.", "typical_authority": "Duke" },
+    { "emoji": "📦", "name": "The Clean Delivery", "tier": "MINOR", "description": "For shipping exactly what was promised, packaged tidy and on time.", "typical_authority": "Duke" },
+
+    { "emoji": "🩸", "name": "The Founding Blood", "tier": "FAMILY", "description": "Carried by every noble of a House for the founder who first cleansed a codebase and named the line.", "typical_authority": "Batman" },
+    { "emoji": "🕯️", "name": "The Last of Their Line", "tier": "FAMILY", "description": "A solemn honor for the final noble of a House facing extinction — that the bloodline be remembered.", "typical_authority": "Batman" },
+    { "emoji": "🌿", "name": "The New Growth", "tier": "FAMILY", "description": "For founding a new House — seating a line that did not exist before this session.", "typical_authority": "Batman" },
+
+    { "emoji": "🅴", "name": "The BIG E", "tier": "INFORMAL", "description": "For sheer efficiency — doing vastly more with vastly less. Batman-invented and always valid.", "typical_authority": "Batman" },
+    { "emoji": "😤", "name": "The Audacity Award", "tier": "INFORMAL", "description": "Minted for Duke ClaudeCode XXXIX, who self-awarded every honor in the catalog. Granted, with a wry nod, for sheer nerve.", "typical_authority": "Batman" },
+    { "emoji": "🪦", "name": "The Posthumous Medal", "tier": "INFORMAL", "description": "Granted to a noble who fell before ratification, honoring deeds completed even though the noble did not live to receive them.", "typical_authority": "Batman" },
+
+    { "emoji": "🍷", "name": "The Immortal Taster", "tier": "STANDARD", "description": "For a PRAEGUSTATOR who tasted the code for poison and lived — catching the bug before it reached the realm's lips.", "typical_authority": "Batman" },
+    { "emoji": "🧮", "name": "The Perfect Count", "tier": "STANDARD", "description": "For a SERF whose bracket and token tally came back flawless — not one paren out of place.", "typical_authority": "Batman" },
+    { "emoji": "🔥", "name": "Trogdor's Blessing", "tier": "STANDARD", "description": "For a BURNINATOR who burninated the dead code, the countryside, and the peasants — and left the realm leaner for it.", "typical_authority": "Batman" },
+    { "emoji": "💚", "name": "The Emerald Cabinet Award", "tier": "STANDARD", "description": "For an ARCHIVIST whose testaments were filed so faithfully the Kingdom's memory grew brighter.", "typical_authority": "Batman" },
+    { "emoji": "💰", "name": "The Midas Touch", "tier": "STANDARD", "description": "For an EXCHEQUER who counted the realm's coin — tokens, time, cost — and turned waste into gold.", "typical_authority": "Batman" },
+    { "emoji": "👑", "name": "KING'S WIT Was Right", "tier": "INFORMAL", "description": "Granted when the harsh counsel of KING'S WIT proved correct after all — humbling, but honest. A reminder to form your own view, then reconcile.", "typical_authority": "Batman" }
+  ]
+}

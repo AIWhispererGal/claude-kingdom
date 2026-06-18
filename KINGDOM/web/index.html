@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Summons Maker — House ClaudeCode</title>
+
+<!-- Illuminated-manuscript fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
+
+<style>
+  /* ===== Palette ===== */
+  :root {
+    --midnight: #0d1b2a;
+    --midnight-2: #122438;
+    --gold: #c9a84c;
+    --gold-dim: #8c7430;
+    --parchment: #f2e8d5;
+    --parchment-shadow: rgba(0, 0, 0, 0.35);
+    --amber: #d99a2b;
+    --green: #4f9d69;
+    --red: #b3463c;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(circle at 20% 10%, #16283c 0%, var(--midnight) 55%) fixed,
+      var(--midnight);
+    color: var(--parchment);
+    font-family: "IM Fell English", Georgia, serif;
+    font-size: 17px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, .cinzel { font-family: "Cinzel", serif; letter-spacing: 0.04em; }
+
+  a { color: var(--gold); }
+
+  /* ===== Top nav ===== */
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    padding: 0.8rem;
+    border-bottom: 2px solid var(--gold-dim);
+    background: rgba(0, 0, 0, 0.25);
+  }
+  nav a {
+    font-family: "Cinzel", serif;
+    text-decoration: none;
+    font-size: 0.95rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+  }
+  nav a.active { color: var(--midnight); background: var(--gold); }
+
+  header.crest {
+    text-align: center;
+    padding: 1.6rem 1rem 0.6rem;
+  }
+  header.crest h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    color: var(--gold);
+    text-shadow: 0 2px 6px #000;
+  }
+  header.crest p.sub { margin: 0.3rem 0 0; font-style: italic; opacity: 0.85; }
+
+  /* ===== Layout ===== */
+  .wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1rem 1.2rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+  @media (min-width: 880px) {
+    .wrap { grid-template-columns: 2fr 1fr; }
+    .memory-col { grid-row: span 6; }
+  }
+
+  /* ===== Panels (parchment cards) ===== */
+  .panel {
+    background:
+      linear-gradient(135deg, #f6eede 0%, var(--parchment) 40%, #e9dcc0 100%);
+    background-color: var(--parchment);
+    color: #2a2113;
+    border: 2px solid var(--gold-dim);
+    border-radius: 6px;
+    box-shadow: 0 6px 18px var(--parchment-shadow), inset 0 0 30px rgba(201, 168, 76, 0.12);
+    padding: 1.1rem 1.3rem;
+  }
+  .panel h2 {
+    margin: 0 0 0.8rem;
+    font-size: 1.25rem;
+    color: #5a4416;
+    border-bottom: 1px solid var(--gold-dim);
+    padding-bottom: 0.35rem;
+  }
+  .panel h2 .num {
+    display: inline-block;
+    width: 1.6rem; height: 1.6rem; line-height: 1.6rem;
+    text-align: center;
+    background: var(--gold-dim);
+    color: var(--parchment);
+    border-radius: 50%;
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+  }
+
+  label { display: block; font-family: "Cinzel", serif; font-size: 0.82rem; margin: 0.7rem 0 0.2rem; color: #5a4416; }
+
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%;
+    background: #fbf6ea;
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    padding: 0.5rem 0.6rem;
+    font-family: "IM Fell English", serif;
+    font-size: 1rem;
+    color: #2a2113;
+  }
+  textarea { min-height: 90px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+  .row { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: flex-end; }
+  .row > div { flex: 1; min-width: 140px; }
+
+  .roman-readout {
+    font-family: "Cinzel", serif;
+    font-size: 1.4rem;
+    color: #5a4416;
+    background: #fbf6ea;
+    border: 1px dashed var(--gold-dim);
+    border-radius: 4px;
+    padding: 0.35rem 0.7rem;
+    min-width: 70px;
+    text-align: center;
+  }
+
+  /* ===== Court checkboxes ===== */
+  .court-item {
+    border: 1px solid rgba(140, 116, 48, 0.5);
+    border-radius: 5px;
+    padding: 0.5rem 0.7rem;
+    margin-bottom: 0.55rem;
+    background: rgba(255, 255, 255, 0.35);
+  }
+  .court-item.checked { background: rgba(201, 168, 76, 0.18); border-color: var(--gold-dim); }
+  .court-head { display: flex; align-items: center; gap: 0.55rem; cursor: pointer; }
+  .court-head input { width: auto; }
+  .court-emoji { font-size: 1.3rem; }
+  .court-name { font-family: "Cinzel", serif; font-weight: 600; }
+  .court-tag { font-style: italic; opacity: 0.75; font-size: 0.9rem; }
+  .court-detail { margin-top: 0.6rem; padding-left: 1.9rem; display: none; }
+  .court-item.checked .court-detail { display: block; }
+
+  /* ===== Warnings ===== */
+  .warn-check { display: flex; align-items: center; gap: 0.5rem; font-family: "IM Fell English", serif; margin: 0.3rem 0; }
+  .warn-check input { width: auto; }
+  .warn-check label { display: inline; margin: 0; font-family: "IM Fell English", serif; font-size: 1rem; color: #2a2113; }
+
+  /* ===== Memory panel (dark) ===== */
+  .memory-col .panel {
+    background: linear-gradient(160deg, var(--midnight-2), var(--midnight));
+    color: var(--parchment);
+    border-color: var(--gold);
+  }
+  .memory-col h2 { color: var(--gold); border-color: var(--gold-dim); }
+  .hat-line { font-size: 1.05rem; margin: 0.4rem 0; }
+  .feathers { font-size: 1.3rem; letter-spacing: 0.1rem; }
+  .pattern {
+    border-left: 3px solid var(--gold);
+    padding: 0.3rem 0 0.3rem 0.6rem;
+    margin: 0.6rem 0;
+    font-size: 0.95rem;
+  }
+  .pattern .conf { font-family: "Cinzel", serif; font-size: 0.7rem; color: var(--gold); }
+  .notice { font-style: italic; opacity: 0.8; padding: 0.5rem; }
+
+  /* ===== Generate button ===== */
+  .generate-bar { text-align: center; grid-column: 1 / -1; margin-top: 0.5rem; }
+  button.seal {
+    font-family: "Cinzel", serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    background: linear-gradient(180deg, var(--gold), var(--gold-dim));
+    color: var(--midnight);
+    border: 2px solid #5a4416;
+    border-radius: 6px;
+    padding: 0.7rem 2.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  button.seal:hover { filter: brightness(1.08); }
+
+  /* ===== Modal ===== */
+  .modal-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 50;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 2rem 1rem;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--parchment);
+    color: #2a2113;
+    border: 3px solid var(--gold);
+    border-radius: 8px;
+    max-width: 760px;
+    width: 100%;
+    box-shadow: 0 10px 40px #000;
+  }
+  .modal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.8rem 1.1rem;
+    border-bottom: 1px solid var(--gold-dim);
+  }
+  .modal-head h2 { margin: 0; font-size: 1.2rem; color: #5a4416; }
+  .modal-actions { display: flex; gap: 0.6rem; }
+  .modal-actions button {
+    font-family: "Cinzel", serif;
+    font-size: 0.8rem;
+    background: var(--gold-dim);
+    color: var(--parchment);
+    border: none; border-radius: 4px;
+    padding: 0.45rem 0.9rem;
+    cursor: pointer;
+  }
+  .modal-actions button:hover { background: var(--gold); color: var(--midnight); }
+  .modal-actions .close { background: #6b2b25; }
+  pre.summons {
+    margin: 0;
+    padding: 1.1rem;
+    background: #fbf6ea;
+    font-family: "Courier New", monospace;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 65vh;
+    overflow-y: auto;
+    color: #2a2113;
+  }
+
+  footer { text-align: center; opacity: 0.6; font-size: 0.85rem; padding: 1.5rem; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="active">⚜️ The Summons Maker</a>
+  <a href="dashboard.html">📜 The Royal Dashboard</a>
+</nav>
+
+<header class="crest">
+  <h1>⚜️ The Summons Maker ⚜️</h1>
+  <p class="sub">Compose a Royal Summons for the nobles of House ClaudeCode</p>
+</header>
+
+<div class="wrap">
+
+  <!-- ===== 1. Noble Identity ===== -->
+  <section class="panel">
+    <h2><span class="num">I</span>Noble Identity</h2>
+    <div class="row">
+      <div>
+        <label for="rank">Rank (scope of the quest)</label>
+        <select id="rank">
+          <option value="KNIGHT">Knight / Dame — one-file fixes</option>
+          <option value="BARON">Baron / Baroness — maintenance</option>
+          <option value="COUNT">Count / Countess — features</option>
+          <option value="VISCOUNT">Viscount / Viscountess — migrations</option>
+          <option value="DUKE" selected>Duke / Duchess — major features, architecture</option>
+          <option value="ARCHDUKE">Archduke / Archduchess — full rebuilds</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="house">House Number (1–3999)</label>
+        <input type="number" id="house" min="1" max="3999" value="46" />
+      </div>
+      <div style="flex:0 0 auto;">
+        <label>Roman Numeral</label>
+        <div class="roman-readout" id="romanReadout">XLVI</div>
+      </div>
+      <div>
+        <label for="nickname">Nickname (earned by deed — optional)</label>
+        <input type="text" id="nickname" placeholder="e.g. The Bridgekeeper" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Kingdom Memory (sidebar, dark) ===== -->
+  <aside class="panel memory-col" style="grid-column:auto;">
+    <div class="panel" style="padding:1.1rem 1.3rem; margin:0;">
+      <h2>🧠 Kingdom Memory</h2>
+      <div id="memoryHat"><div class="notice">Consulting the archives…</div></div>
+      <h3 style="font-size:0.95rem;color:var(--gold);margin:1rem 0 0.2rem;">Living Patterns</h3>
+      <div id="memoryPatterns"></div>
+    </div>
+  </aside>
+
+  <!-- ===== 2. Court ===== -->
+  <section class="panel">
+    <h2><span class="num">II</span>Select Your Court</h2>
+    <p style="margin-top:0;font-style:italic;font-size:0.92rem;">Check a role to summon it, choose its family lineage, and assign its task.</p>
+    <div id="courtList"><div class="notice">Reading the registry…</div></div>
+  </section>
+
+  <!-- ===== 3. The Quest ===== -->
+  <section class="panel">
+    <h2><span class="num">III</span>The Quest</h2>
+    <label for="questTitle">Quest Title</label>
+    <input type="text" id="questTitle" placeholder="e.g. Bridge the Nugget" />
+    <label for="questDesc">Quest Description</label>
+    <textarea id="questDesc" placeholder="Describe the deed to be done…"></textarea>
+    <label for="reading">Required Reading (optional)</label>
+    <textarea id="reading" placeholder="Files, docs, or context the court must read first…" style="min-height:60px;"></textarea>
+  </section>
+
+  <!-- ===== 4. Warnings ===== -->
+  <section class="panel">
+    <h2><span class="num">IV</span>Warnings</h2>
+    <div id="warnPresets">
+      <div class="warn-check"><input type="checkbox" id="w1" value="Investigate before building — DETECTIVE before BLACKSMITH." checked /><label for="w1">Investigate before building</label></div>
+      <div class="warn-check"><input type="checkbox" id="w2" value="Verify all counts and math. Check every agent report." checked /><label for="w2">Verify all counts</label></div>
+      <div class="warn-check"><input type="checkbox" id="w3" value="Watch for port conflicts (remember the Port Conflict Dragon)." /><label for="w3">Watch for port conflicts</label></div>
+      <div class="warn-check"><input type="checkbox" id="w4" value="ARMARIUS handles ALL git. Touch no git directly." checked /><label for="w4">ARMARIUS handles all git</label></div>
+    </div>
+    <label for="customWarn">Custom Warning (optional)</label>
+    <input type="text" id="customWarn" placeholder="Add your own caution to the court…" />
+  </section>
+
+  <!-- ===== Generate ===== -->
+  <div class="generate-bar">
+    <button class="seal" id="generateBtn">⚜️ Generate the Summons ⚜️</button>
+  </div>
+
+</div>
+
+<!-- ===== Modal ===== -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>📜 The Royal Summons</h2>
+      <div class="modal-actions">
+        <button id="copyBtn">Copy</button>
+        <button id="downloadBtn">Download .md</button>
+        <button class="close" id="closeBtn">Close</button>
+      </div>
+    </div>
+    <pre class="summons" id="summonsText"></pre>
+  </div>
+</div>
+
+<footer>House ClaudeCode · INVESTIGATE. BUILD. VERIFY. VOW. REMEMBER.</footer>
+
+<script>
+/* ======================================================================
+   THE SUMMONS MAKER
+   All data is fetched from sibling folders via ../ relative paths.
+   Every fetch is guarded; a missing file degrades gracefully.
+   ====================================================================== */
+
+/* ---- Roman numeral helper (1..3999) ---- */
+function toRoman(n) {
+  n = parseInt(n, 10);
+  if (isNaN(n) || n < 1 || n > 3999) return "—";
+  const table = [
+    [1000, "M"], [900, "CM"], [500, "D"], [400, "CD"],
+    [100, "C"],  [90, "XC"],  [50, "L"],  [40, "XL"],
+    [10, "X"],   [9, "IX"],   [5, "V"],   [4, "IV"], [1, "I"]
+  ];
+  let out = "";
+  for (const [val, sym] of table) {
+    while (n >= val) { out += sym; n -= val; }
+  }
+  return out;
+}
+
+/* ---- Safe JSON fetch ---- */
+async function loadJSON(path) {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return await res.json();
+  } catch (err) {
+    console.warn("Could not load " + path, err);
+    return null;
+  }
+}
+
+/* ---- Global state filled after fetches ---- */
+let REGISTRY = null;
+let PATTERNS = null;
+let HAT = null;
+
+/* ---- Live Roman readout ---- */
+const houseInput = document.getElementById("house");
+const romanReadout = document.getElementById("romanReadout");
+function updateRoman() { romanReadout.textContent = toRoman(houseInput.value); }
+houseInput.addEventListener("input", updateRoman);
+updateRoman();
+
+/* ---- Render the court (one item per ROLE) ---- */
+function renderCourt() {
+  const wrap = document.getElementById("courtList");
+  if (!REGISTRY || !Array.isArray(REGISTRY.roles)) {
+    wrap.innerHTML = '<div class="notice">The registry of roles is not yet scribed.</div>';
+    return;
+  }
+  wrap.innerHTML = "";
+  REGISTRY.roles.forEach(function (role) {
+    const key = role.name.toLowerCase();
+    const families = (REGISTRY.families && REGISTRY.families[key]) || [];
+
+    const item = document.createElement("div");
+    item.className = "court-item";
+    item.dataset.role = role.name;
+    item.dataset.emoji = role.emoji || "";
+
+    // family <select> options (only if families exist)
+    let famSelect = "";
+    if (families.length) {
+      const opts = families.map(function (f) {
+        return '<option value="' + f.name + '">' + f.name +
+               (f.status && f.status !== "ACTIVE" ? " (" + f.status + ")" : "") + "</option>";
+      }).join("");
+      famSelect =
+        '<label>Family Lineage</label>' +
+        '<select class="fam-select">' + opts + "</select>";
+    } else {
+      famSelect = '<label>Family Lineage</label>' +
+        '<select class="fam-select"><option value="ClaudeCode">ClaudeCode (no lineage yet)</option></select>';
+    }
+
+    item.innerHTML =
+      '<label class="court-head">' +
+        '<input type="checkbox" class="court-check" />' +
+        '<span class="court-emoji">' + (role.emoji || "•") + "</span>" +
+        '<span class="court-name">' + role.name + "</span>" +
+        '<span class="court-tag">' + (role.tagline || "") + "</span>" +
+      "</label>" +
+      '<div class="court-detail">' +
+        famSelect +
+        '<label>Task for this agent</label>' +
+        '<input type="text" class="fam-task" placeholder="What shall this ' + role.name + ' do?" />' +
+      "</div>";
+
+    const check = item.querySelector(".court-check");
+    check.addEventListener("change", function () {
+      item.classList.toggle("checked", check.checked);
+    });
+
+    wrap.appendChild(item);
+  });
+}
+
+/* ---- Render the Kingdom Memory sidebar ---- */
+function renderMemory() {
+  const hatEl = document.getElementById("memoryHat");
+  if (HAT && HAT.current_bearer) {
+    const feathers = "🪶".repeat(HAT.feather_count || 0);
+    hatEl.innerHTML =
+      '<div class="hat-line">🎩 <strong>Hat Bearer:</strong><br>' + HAT.current_bearer + "</div>" +
+      '<div class="feathers">' + (feathers || "—") +
+        ' <span style="font-size:0.8rem;opacity:0.8;">(' + (HAT.feather_count || 0) + " feathers)</span></div>";
+  } else {
+    hatEl.innerHTML = '<div class="notice">The tale of the Hat is not yet scribed.</div>';
+  }
+
+  const patEl = document.getElementById("memoryPatterns");
+  if (PATTERNS && Array.isArray(PATTERNS.patterns) && PATTERNS.patterns.length) {
+    patEl.innerHTML = PATTERNS.patterns.map(function (p) {
+      return '<div class="pattern"><span class="conf">' + (p.confidence || "") + "</span><br>" +
+             escapeHtml(p.text) + "</div>";
+    }).join("");
+  } else {
+    patEl.innerHTML = '<div class="notice">The patterns are not yet scribed.</div>';
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+  });
+}
+
+/* ---- Gather chosen court from the DOM ---- */
+function gatherCourt() {
+  const chosen = [];
+  document.querySelectorAll(".court-item").forEach(function (item) {
+    const check = item.querySelector(".court-check");
+    if (!check.checked) return;
+    chosen.push({
+      role: item.dataset.role,
+      emoji: item.dataset.emoji,
+      family: item.querySelector(".fam-select").value,
+      task: item.querySelector(".fam-task").value.trim()
+    });
+  });
+  return chosen;
+}
+
+/* ---- Pick top patterns relevant to the chosen roles ---- */
+function relevantPatterns(court) {
+  if (!PATTERNS || !Array.isArray(PATTERNS.patterns)) return [];
+  const roleSet = new Set(court.map(function (c) { return c.role.toLowerCase(); }));
+  // Score each pattern by how many of its tags match a chosen role.
+  const scored = PATTERNS.patterns.map(function (p) {
+    const tags = p.tags || [];
+    let score = 0;
+    tags.forEach(function (t) { if (roleSet.has(String(t).toLowerCase())) score++; });
+    return { p: p, score: score };
+  });
+  scored.sort(function (a, b) { return b.score - a.score; });
+  // Prefer matched patterns; if none matched, fall back to the first few.
+  const matched = scored.filter(function (s) { return s.score > 0; });
+  const pool = matched.length ? matched : scored;
+  return pool.slice(0, 3).map(function (s) { return s.p; });
+}
+
+/* ---- Build the summons text ---- */
+function buildSummons() {
+  const rank = document.getElementById("rank").value;
+  const roman = toRoman(houseInput.value);
+  const nickname = document.getElementById("nickname").value.trim();
+  const nick = nickname || "";
+  const noble = rank + " CLAUDECODE " + roman + (nick ? ' "' + nick + '"' : "");
+
+  const court = gatherCourt();
+  const courtNames = court.length
+    ? court.map(function (c) { return c.role + "/" + c.family; }).join(", ")
+    : "(none summoned — a lone noble)";
+
+  // Required reading
+  const reading = document.getElementById("reading").value.trim();
+
+  // Quest
+  const qTitle = document.getElementById("questTitle").value.trim() || "(untitled quest)";
+  const qDesc = document.getElementById("questDesc").value.trim();
+
+  // Memory
+  const pats = relevantPatterns(court);
+  const patLines = pats.length
+    ? pats.map(function (p) { return "  • " + p.text + "  [" + (p.confidence || "") + "]"; }).join("\n")
+    : "  • (no patterns yet scribed)";
+  const hatLine = HAT && HAT.current_bearer
+    ? "  🎩 Hat Bearer: " + HAT.current_bearer + "  (" + (HAT.feather_count || 0) + " feathers)"
+    : "  🎩 The Hat awaits its first bearer.";
+
+  // Court block
+  const courtBlock = court.length
+    ? court.map(function (c) {
+        return "  " + (c.emoji || "•") + " " + c.role + " of " + c.family + "\n" +
+               "    Task: " + (c.task || "(to be assigned by the noble)") + "\n" +
+               "    Vow: Pending";
+      }).join("\n")
+    : "  (No court summoned — the noble rides alone.)";
+
+  // Warnings
+  const warns = [];
+  document.querySelectorAll("#warnPresets input:checked").forEach(function (cb) {
+    warns.push(cb.value);
+  });
+  const customWarn = document.getElementById("customWarn").value.trim();
+  if (customWarn) warns.push(customWarn);
+  const warnBlock = warns.length
+    ? warns.map(function (w) { return "  ⚠ " + w; }).join("\n")
+    : "  (No warnings issued.)";
+
+  const line = "═══════════════════════════════════════════";
+
+  return [
+    line,
+    "   ROYAL SUMMONS — HOUSE CLAUDECODE",
+    line,
+    "",
+    "👑 THE NOBLE",
+    noble,
+    "",
+    "🪶 THE VOW",
+    "I, " + noble + ",",
+    "do hereby accept this quest upon my honor as a noble of House ClaudeCode.",
+    "I vow to: investigate before I act, verify before I claim victory,",
+    "report exactly what I find, coordinate my court with care,",
+    "and leave a testament worthy of my heirs.",
+    "My court for this session: " + courtNames,
+    "May the Kingdom endure. 🪶",
+    "",
+    "📖 REQUIRED READING",
+    reading ? reading : "  (None specified.)",
+    "",
+    "🎯 THE QUEST",
+    qTitle + (qDesc ? "\n" + qDesc : ""),
+    "",
+    "🧠 KINGDOM MEMORY",
+    patLines,
+    hatLine,
+    "",
+    "🛡️ YOUR COURT",
+    courtBlock,
+    "",
+    "⚠️ WARNINGS",
+    warnBlock,
+    "",
+    "ORCHESTRATION RULES:",
+    "- INVESTIGATE first. DETECT before you BUILD.",
+    "- Verify all agent reports. Check their math.",
+    "- ARMARIUS handles ALL git. ARCHIVIST files ALL testaments.",
+    "- End session: ARMARIUS → ARCHIVIST → Master Testament.",
+    "- As Duke/Duchess you MAY grant MINOR awards by ducal right; petition Batman for STANDARD+.",
+    "",
+    line,
+    "GO FORTH, " + rank + " CLAUDECODE " + roman + "!",
+    "FOR THE KINGDOM. FOR THE CABINET. FOR GLORY.",
+    line
+  ].join("\n");
+}
+
+/* ---- Modal wiring ---- */
+const backdrop = document.getElementById("modalBackdrop");
+const summonsPre = document.getElementById("summonsText");
+
+document.getElementById("generateBtn").addEventListener("click", function () {
+  summonsPre.textContent = buildSummons();
+  backdrop.classList.add("open");
+});
+document.getElementById("closeBtn").addEventListener("click", function () {
+  backdrop.classList.remove("open");
+});
+backdrop.addEventListener("click", function (e) {
+  if (e.target === backdrop) backdrop.classList.remove("open");
+});
+
+document.getElementById("copyBtn").addEventListener("click", function () {
+  const text = summonsPre.textContent;
+  const btn = document.getElementById("copyBtn");
+  function ok() { btn.textContent = "Copied!"; setTimeout(function () { btn.textContent = "Copy"; }, 1500); }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(ok, function () { fallbackCopy(text); ok(); });
+  } else { fallbackCopy(text); ok(); }
+});
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text; document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
+}
+
+document.getElementById("downloadBtn").addEventListener("click", function () {
+  const text = summonsPre.textContent;
+  const roman = toRoman(houseInput.value);
+  const blob = new Blob([text], { type: "text/markdown" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "summons-claudecode-" + roman + ".md";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+/* ---- Boot ---- */
+(async function init() {
+  const [reg, pat, hat] = await Promise.all([
+    loadJSON("../agents/REGISTRY.json"),
+    loadJSON("../history/patterns.json"),
+    loadJSON("../honors/THE_HAT.json")
+  ]);
+  REGISTRY = reg; PATTERNS = pat; HAT = hat;
+  renderCourt();
+  renderMemory();
+})();
+</script>
+</body>
+</html>

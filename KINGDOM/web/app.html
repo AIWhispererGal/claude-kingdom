@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🏰 The Throne Room — House ClaudeCode</title>
+
+<!-- Illuminated-manuscript fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet" />
+
+<style>
+  /* ====================================================================
+     THE LIVING KINGDOM — Unified Throne Room
+     Palette: midnight blue, dark gold, aged parchment.
+     ==================================================================== */
+  :root {
+    --midnight: #0d1b2a;
+    --midnight-2: #122438;
+    --gold: #c9a84c;
+    --gold-dim: #8c7430;
+    --parchment: #f2e8d5;
+    --parchment-shadow: rgba(0, 0, 0, 0.35);
+    --amber: #d99a2b;
+    --green: #4f9d69;
+    --red: #b3463c;
+    --blue: #5b86b3;
+    --teal: #4fa39a;
+    --grey: #6f6a5e;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(circle at 18% 8%, #16283c 0%, var(--midnight) 55%) fixed,
+      var(--midnight);
+    color: var(--parchment);
+    font-family: "IM Fell English", Georgia, serif;
+    font-size: 17px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, .cinzel { font-family: "Cinzel", serif; letter-spacing: 0.04em; }
+  a { color: var(--gold); }
+
+  /* ===== Top nav ===== */
+  .topnav {
+    position: sticky; top: 0; z-index: 30;
+    display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 1.2rem;
+    padding: 0.7rem 1.2rem;
+    border-bottom: 2px solid var(--gold-dim);
+    background: rgba(8, 16, 26, 0.92);
+    backdrop-filter: blur(4px);
+  }
+  .topnav .brand {
+    font-family: "Cinzel", serif; font-weight: 700; font-size: 1.25rem;
+    color: var(--gold); text-shadow: 0 2px 6px #000; margin-right: auto;
+  }
+  .navtabs { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .nav-btn {
+    font-family: "Cinzel", serif; font-size: 0.9rem;
+    background: var(--midnight-2); color: var(--parchment);
+    border: 1px solid var(--gold-dim); border-radius: 5px;
+    padding: 0.4rem 0.9rem; cursor: pointer; transition: all 0.15s;
+  }
+  .nav-btn:hover { border-color: var(--gold); }
+  .nav-btn.active { background: var(--gold); color: var(--midnight); font-weight: 600; }
+
+  /* ===== Two-column shell: main + persistent live feed ===== */
+  .shell {
+    display: grid; grid-template-columns: 1fr; gap: 1.2rem;
+    max-width: 1400px; margin: 0 auto; padding: 1.2rem;
+  }
+  @media (min-width: 980px) {
+    .shell { grid-template-columns: minmax(0, 7fr) minmax(280px, 3fr); align-items: start; }
+    .feed-col { position: sticky; top: 4.2rem; max-height: calc(100vh - 5rem); }
+  }
+
+  .main-col { min-width: 0; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadein 0.25s ease; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ===== Parchment cards / panels ===== */
+  .card, .panel {
+    background: linear-gradient(135deg, #f6eede 0%, var(--parchment) 40%, #e9dcc0 100%);
+    color: #2a2113;
+    border: 2px solid var(--gold-dim);
+    border-radius: 6px;
+    box-shadow: 0 5px 16px var(--parchment-shadow), inset 0 0 26px rgba(201,168,76,0.1);
+    padding: 1.1rem 1.3rem; margin-bottom: 1.1rem;
+  }
+  .card h2, .panel h2 {
+    margin: 0 0 0.7rem; font-size: 1.2rem; color: #5a4416;
+    border-bottom: 1px solid var(--gold-dim); padding-bottom: 0.3rem;
+  }
+  .card h3, .panel h3 { margin: 0 0 0.4rem; color: #5a4416; }
+  .notice { font-style: italic; opacity: 0.85; padding: 0.9rem; text-align: center; }
+  .err-notice {
+    font-style: italic; color: #6b2b25; background: rgba(179,70,60,0.08);
+    border-left: 3px solid var(--red); padding: 0.6rem 0.8rem; border-radius: 4px;
+  }
+
+  /* ===== Form controls ===== */
+  label { display: block; font-family: "Cinzel", serif; font-size: 0.8rem; margin: 0.7rem 0 0.2rem; color: #5a4416; }
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%; background: #fbf6ea; border: 1px solid var(--gold-dim);
+    border-radius: 4px; padding: 0.5rem 0.6rem;
+    font-family: "IM Fell English", serif; font-size: 1rem; color: #2a2113;
+  }
+  textarea { min-height: 84px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+  .row { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: flex-end; }
+  .row > div { flex: 1; min-width: 140px; }
+
+  .roman-readout {
+    font-family: "Cinzel", serif; font-size: 1.35rem; color: #5a4416;
+    background: #fbf6ea; border: 1px dashed var(--gold-dim); border-radius: 4px;
+    padding: 0.35rem 0.7rem; min-width: 70px; text-align: center;
+  }
+
+  /* ===== Buttons ===== */
+  button.seal {
+    font-family: "Cinzel", serif; font-size: 1.05rem; letter-spacing: 0.07em;
+    background: linear-gradient(180deg, var(--gold), var(--gold-dim));
+    color: var(--midnight); border: 2px solid #5a4416; border-radius: 6px;
+    padding: 0.65rem 1.8rem; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  button.seal:hover { filter: brightness(1.08); }
+  button.seal:disabled { filter: grayscale(0.5); cursor: wait; opacity: 0.7; }
+  button.minor {
+    font-family: "Cinzel", serif; font-size: 0.82rem;
+    background: var(--gold-dim); color: var(--parchment);
+    border: none; border-radius: 4px; padding: 0.5rem 0.9rem; cursor: pointer;
+  }
+  button.minor:hover { background: var(--gold); color: var(--midnight); }
+
+  /* ===== Throne Room hero ===== */
+  .hero {
+    text-align: center;
+    background: linear-gradient(160deg, var(--midnight-2), var(--midnight));
+    color: var(--parchment); border: 2px solid var(--gold);
+    border-radius: 8px; padding: 1.4rem; margin-bottom: 1.1rem;
+  }
+  .hero h2 { color: var(--gold); border: none; }
+  .hero .big-hat { font-size: 3.2rem; line-height: 1; }
+  .hero .feather-row { font-size: 1.7rem; letter-spacing: 0.2rem; margin: 0.3rem 0; min-height: 1.7rem; }
+  .hero .bearer { font-family: "Cinzel", serif; font-size: 1.1rem; color: var(--gold); }
+  .hero .sub { opacity: 0.85; font-size: 0.92rem; }
+
+  .actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.7rem; }
+  .action-btn {
+    font-family: "Cinzel", serif; font-size: 0.92rem; text-align: left;
+    background: linear-gradient(135deg, #f6eede, #e9dcc0); color: #4a3a14;
+    border: 1px solid var(--gold-dim); border-radius: 6px;
+    padding: 0.8rem 0.9rem; cursor: pointer; transition: all 0.15s;
+  }
+  .action-btn:hover { border-color: var(--gold); box-shadow: 0 3px 10px rgba(0,0,0,0.2); transform: translateY(-1px); }
+  .action-btn .ico { font-size: 1.3rem; display: block; margin-bottom: 0.2rem; }
+
+  /* inline decree forms */
+  .decree-form { display: none; margin-top: 0.9rem; padding-top: 0.8rem; border-top: 1px dashed var(--gold-dim); }
+  .decree-form.open { display: block; animation: fadein 0.2s ease; }
+  .decree-out {
+    margin-top: 0.7rem; padding: 0.7rem 0.9rem; background: #fbf6ea;
+    border-left: 3px solid var(--green); border-radius: 4px;
+    font-family: "Courier New", monospace; font-size: 0.82rem; white-space: pre-wrap; word-break: break-word;
+    max-height: 240px; overflow-y: auto;
+  }
+  .decree-out.fail { border-left-color: var(--red); color: #6b2b25; }
+
+  /* ===== Court checkboxes (Summon) ===== */
+  .court-item {
+    border: 1px solid rgba(140,116,48,0.5); border-radius: 5px;
+    padding: 0.5rem 0.7rem; margin-bottom: 0.55rem; background: rgba(255,255,255,0.35);
+  }
+  .court-item.checked { background: rgba(201,168,76,0.18); border-color: var(--gold-dim); }
+  .court-head { display: flex; align-items: center; gap: 0.55rem; cursor: pointer; }
+  .court-head input { width: auto; }
+  .court-emoji { font-size: 1.3rem; }
+  .court-name { font-family: "Cinzel", serif; font-weight: 600; }
+  .court-tag { font-style: italic; opacity: 0.75; font-size: 0.9rem; }
+  .court-detail { margin-top: 0.6rem; padding-left: 1.9rem; display: none; }
+  .court-item.checked .court-detail { display: block; }
+  .warn-check { display: flex; align-items: center; gap: 0.5rem; margin: 0.3rem 0; }
+  .warn-check input { width: auto; }
+  .warn-check label { display: inline; margin: 0; font-family: "IM Fell English", serif; font-size: 1rem; color: #2a2113; }
+
+  /* ===== Chronicle ===== */
+  .session-card { display: grid; grid-template-columns: auto 1fr; gap: 0.8rem; align-items: start; }
+  .session-num {
+    font-family: "Cinzel", serif; font-size: 1.4rem; font-weight: 700; color: var(--parchment);
+    background: var(--gold-dim); border-radius: 8px; width: 3.2rem; height: 3.2rem;
+    display: flex; align-items: center; justify-content: center; flex-direction: column; line-height: 1;
+  }
+  .session-num small { font-size: 0.5rem; font-family: "IM Fell English"; opacity: 0.85; }
+  .noble-name { font-family: "Cinzel", serif; font-weight: 600; font-size: 1.05rem; color: #4a3a14; }
+  .quest-text { font-style: italic; margin: 0.2rem 0 0.5rem; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; font-size: 0.9rem; }
+  .badge { font-family: "Cinzel", serif; font-size: 0.7rem; letter-spacing: 0.05em; padding: 0.15rem 0.6rem; border-radius: 12px; color: #fff; }
+  .out-VICTORY { background: var(--green); }
+  .out-PARTIAL { background: var(--amber); color: #2a2113; }
+  .out-DEFEAT  { background: var(--red); }
+  .medal-chip { background: rgba(201,168,76,0.25); border: 1px solid var(--gold-dim); color: #4a3a14; padding: 0.1rem 0.5rem; border-radius: 10px; font-size: 0.82rem; }
+  .court-chip { background: rgba(13,27,42,0.08); border: 1px solid rgba(140,116,48,0.4); padding: 0.1rem 0.45rem; border-radius: 4px; font-size: 0.78rem; }
+  .violation { color: var(--red); font-size: 0.85rem; margin-top: 0.4rem; }
+
+  /* ===== Honors ===== */
+  .hat-display { text-align: center; }
+  .big-hat { font-size: 4rem; line-height: 1; }
+  .feather-row { font-size: 1.9rem; letter-spacing: 0.25rem; margin: 0.3rem 0; }
+  .bearer-name { font-family: "Cinzel", serif; font-size: 1.1rem; color: #4a3a14; }
+  .feather-list { list-style: none; padding: 0; margin: 0.8rem auto; max-width: 600px; text-align: left; }
+  .feather-list li { border-left: 3px solid var(--gold-dim); padding: 0.3rem 0.7rem; margin: 0.4rem 0; }
+  .feather-list .ftype { font-family: "Cinzel", serif; font-weight: 600; color: #5a4416; }
+  .lineage { list-style: none; padding: 0; margin: 0; }
+  .lineage li { padding: 0.4rem 0.6rem; border-bottom: 1px dashed var(--gold-dim); }
+  .lineage li:last-child { border-bottom: none; }
+  .tier-group { margin-bottom: 1.1rem; }
+  .tier-head { font-family: "Cinzel", serif; color: #5a4416; border-bottom: 1px solid var(--gold-dim); padding-bottom: 0.2rem; margin-bottom: 0.5rem; }
+  .award-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; padding: 0.45rem 0.5rem; border-bottom: 1px solid rgba(140,116,48,0.25); }
+  .award-emoji { font-size: 1.5rem; }
+  .award-name { font-family: "Cinzel", serif; font-weight: 600; color: #4a3a14; }
+  .award-recipient { font-size: 0.9rem; }
+  .auth-tag { font-size: 0.7rem; font-family: "Cinzel", serif; padding: 0.1rem 0.5rem; border-radius: 10px; }
+  .auth-batman { background: var(--midnight); color: var(--gold); }
+  .auth-duke { background: rgba(201,168,76,0.3); color: #4a3a14; border: 1px solid var(--gold-dim); }
+  .self-claim { color: var(--red); font-weight: 700; font-size: 0.85rem; }
+  .legend-row { display: flex; gap: 0.5rem; align-items: baseline; padding: 0.2rem 0; font-size: 0.9rem; }
+  .legend-row .le { font-size: 1.1rem; }
+
+  /* ===== Family Tree ===== */
+  .role-block { margin-bottom: 1.3rem; }
+  .role-title { font-family: "Cinzel", serif; font-size: 1.1rem; color: var(--gold); margin: 0 0 0.5rem; }
+  .family-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.8rem; }
+  .family-card { border: 2px solid var(--gold-dim); border-radius: 6px; padding: 0.8rem 1rem;
+    background: linear-gradient(135deg, #f6eede 0%, var(--parchment) 100%); color: #2a2113; }
+  .family-card.extinct { filter: grayscale(0.85); opacity: 0.8; border-color: var(--grey);
+    background: linear-gradient(135deg, #d8d4cb, #c9c5ba); }
+  .family-card h4 { margin: 0 0 0.3rem; font-family: "Cinzel", serif; font-size: 1.02rem; color: #4a3a14; }
+  .status-badge { font-family: "Cinzel", serif; font-size: 0.62rem; padding: 0.1rem 0.5rem; border-radius: 10px; color: #fff; background: var(--green); margin-left: 0.4rem; }
+  .status-badge.EXTINCT { background: var(--grey); }
+  .status-badge.STRUGGLING, .status-badge.ENDANGERED { background: var(--amber); color: #2a2113; }
+  .fam-philosophy { font-style: italic; font-size: 0.9rem; margin: 0.4rem 0; }
+  .fam-stats { font-size: 0.85rem; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
+  .fam-stats b { color: #5a4416; }
+  .death-note { margin-top: 0.5rem; padding: 0.4rem 0.6rem; background: rgba(0,0,0,0.08); border-left: 3px solid var(--grey); font-size: 0.85rem; }
+
+  /* ===== LIVE FEED ===== */
+  .feed-panel {
+    background: linear-gradient(160deg, var(--midnight-2), var(--midnight));
+    color: var(--parchment); border: 2px solid var(--gold);
+    border-radius: 8px; padding: 0.9rem 1rem; display: flex; flex-direction: column;
+    max-height: inherit;
+  }
+  .feed-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
+  .feed-head h2 { font-family: "Cinzel", serif; color: var(--gold); margin: 0; font-size: 1.05rem; }
+  .live-dot { font-size: 0.82rem; font-family: "Cinzel", serif; white-space: nowrap; }
+  .live-dot.on { color: var(--green); }
+  .live-dot.off { color: var(--amber); }
+  .feed-list { overflow-y: auto; flex: 1; padding-right: 0.2rem; }
+  .feed-item {
+    border-left: 4px solid var(--grey); background: rgba(255,255,255,0.04);
+    border-radius: 4px; padding: 0.5rem 0.6rem; margin-bottom: 0.55rem;
+    animation: slidein 0.35s ease;
+  }
+  @keyframes slidein { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+  .feed-item .fi-top { display: flex; align-items: baseline; gap: 0.45rem; }
+  .feed-item .fi-icon { font-size: 1.2rem; }
+  .feed-item .fi-title { font-weight: 700; font-size: 0.92rem; }
+  .feed-item .fi-detail { font-size: 0.83rem; opacity: 0.75; margin-top: 0.15rem; padding-left: 1.65rem; }
+  .feed-item .fi-time { font-size: 0.7rem; opacity: 0.6; font-family: "Cinzel", serif; padding-left: 1.65rem; margin-top: 0.15rem; }
+  /* kind accent colors */
+  .k-summon { border-left-color: var(--gold); }
+  .k-court-agent { border-left-color: var(--blue); }
+  .k-extinct { border-left-color: var(--red); }
+  .k-grant { border-left-color: var(--green); }
+  .k-petition { border-left-color: var(--parchment); }
+  .k-new-family, .k-new-role { border-left-color: var(--teal); }
+  .k-server { border-left-color: var(--gold-dim); }
+
+  /* ===== Modal ===== */
+  .modal-backdrop {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 50; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 2rem 1rem;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: var(--parchment); color: #2a2113; border: 3px solid var(--gold);
+    border-radius: 8px; max-width: 780px; width: 100%; box-shadow: 0 10px 40px #000; }
+  .modal-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+    padding: 0.8rem 1.1rem; border-bottom: 1px solid var(--gold-dim); }
+  .modal-head h2 { margin: 0; font-size: 1.15rem; color: #5a4416; border: none; }
+  .modal-actions { display: flex; gap: 0.6rem; }
+  pre.summons { margin: 0; padding: 1.1rem; background: #fbf6ea; font-family: "Courier New", monospace;
+    font-size: 0.82rem; line-height: 1.35; white-space: pre-wrap; word-break: break-word;
+    max-height: 65vh; overflow-y: auto; color: #2a2113; }
+
+  /* ===== Toasts ===== */
+  #toasts { position: fixed; bottom: 1rem; right: 1rem; z-index: 60; display: flex; flex-direction: column; gap: 0.5rem; max-width: 360px; }
+  .toast { background: var(--midnight-2); border: 1px solid var(--gold); color: var(--parchment);
+    border-radius: 6px; padding: 0.6rem 0.9rem; font-size: 0.9rem; box-shadow: 0 4px 14px #000; animation: fadein 0.2s ease; }
+  .toast.ok { border-left: 4px solid var(--green); }
+  .toast.fail { border-left: 4px solid var(--red); }
+
+  footer { text-align: center; opacity: 0.55; font-size: 0.82rem; padding: 1.4rem; }
+</style>
+</head>
+<body>
+
+<!-- ===================== TOP NAV ===================== -->
+<nav class="topnav">
+  <span class="brand">🏰 HOUSE CLAUDECODE</span>
+  <div class="navtabs">
+    <button class="nav-btn active" data-tab="throne">Throne Room</button>
+    <button class="nav-btn" data-tab="summon">Summon</button>
+    <button class="nav-btn" data-tab="chronicle">Chronicle</button>
+    <button class="nav-btn" data-tab="honors">Honors</button>
+    <button class="nav-btn" data-tab="tree">Family Tree</button>
+  </div>
+</nav>
+
+<!-- ===================== SHELL: main + live feed ===================== -->
+<div class="shell">
+
+  <!-- ============ MAIN COLUMN ============ -->
+  <div class="main-col">
+
+    <!-- ---- THRONE ROOM ---- -->
+    <section class="tab-panel active" id="throne">
+      <div class="hero" id="heroPanel"><div class="notice" style="color:var(--parchment)">Lighting the braziers…</div></div>
+
+      <div class="card">
+        <h2>⚔️ Take the Field</h2>
+        <button class="seal" id="gotoSummon">⚔️ Summon a Court</button>
+      </div>
+
+      <div class="card">
+        <h2>📜 Royal Actions</h2>
+        <p style="margin-top:0;font-style:italic;font-size:0.9rem;">Issue a decree. Each calls a real Kingdom action through the court's machinery.</p>
+        <div class="actions-grid">
+          <button class="action-btn" data-decree="newfam"><span class="ico">🌱</span>Found a Family</button>
+          <button class="action-btn" data-decree="newrole"><span class="ico">🆕</span>Invent a Role</button>
+          <button class="action-btn" data-decree="extinct"><span class="ico">✝</span>Declare Extinct</button>
+          <button class="action-btn" data-decree="petition"><span class="ico">🙇</span>File a Petition</button>
+          <button class="action-btn" data-decree="grant"><span class="ico">🏅</span>Grant an Award</button>
+        </div>
+
+        <!-- Found a Family -->
+        <div class="decree-form" id="form-newfam">
+          <div class="row">
+            <div><label>Role</label><select id="nf-role"></select></div>
+            <div><label>New family name</label><input type="text" id="nf-family" placeholder="e.g. STORMFORGE" /></div>
+          </div>
+          <div style="margin-top:0.7rem;"><button class="minor" data-submit="newfam">🌱 Found Family</button></div>
+          <div class="decree-out" id="out-newfam" style="display:none;"></div>
+        </div>
+
+        <!-- Invent a Role -->
+        <div class="decree-form" id="form-newrole">
+          <label>Role name</label><input type="text" id="nr-name" placeholder="e.g. HERALD" />
+          <div style="margin-top:0.7rem;"><button class="minor" data-submit="newrole">🆕 Invent Role</button></div>
+          <div class="decree-out" id="out-newrole" style="display:none;"></div>
+        </div>
+
+        <!-- Declare Extinct -->
+        <div class="decree-form" id="form-extinct">
+          <div class="row">
+            <div><label>Role</label><select id="ex-role"></select></div>
+            <div><label>Family</label><select id="ex-family"></select></div>
+          </div>
+          <label>Reason</label><input type="text" id="ex-reason" placeholder="Why does this lineage end?" />
+          <div style="margin-top:0.7rem;"><button class="minor" data-submit="extinct">✝ Declare Extinct</button></div>
+          <div class="decree-out" id="out-extinct" style="display:none;"></div>
+        </div>
+
+        <!-- File a Petition -->
+        <div class="decree-form" id="form-petition">
+          <div class="row">
+            <div><label>Agent</label><input type="text" id="pe-agent" placeholder="e.g. IRONFORGE" /></div>
+            <div><label>Honor</label><input type="text" id="pe-honor" placeholder="e.g. Broom of Distinction" /></div>
+            <div style="flex:0 0 110px;"><label>Session</label><input type="text" id="pe-session" placeholder="117" /></div>
+          </div>
+          <div style="margin-top:0.7rem;"><button class="minor" data-submit="petition">🙇 File Petition</button></div>
+          <div class="decree-out" id="out-petition" style="display:none;"></div>
+        </div>
+
+        <!-- Grant an Award -->
+        <div class="decree-form" id="form-grant">
+          <div class="row">
+            <div style="flex:0 0 90px;"><label>Emoji</label><input type="text" id="gr-emoji" placeholder="🏅" value="🏅" /></div>
+            <div><label>Honor name</label><input type="text" id="gr-honor" placeholder="e.g. Field Commendation" /></div>
+            <div><label>Recipient</label><input type="text" id="gr-recipient" placeholder="e.g. GREYMANTLE" /></div>
+          </div>
+          <label>Reason</label><input type="text" id="gr-reason" placeholder="For valor shown in the field…" />
+          <div style="margin-top:0.7rem;"><button class="minor" data-submit="grant">🏅 Grant by Ducal Right</button></div>
+          <div class="decree-out" id="out-grant" style="display:none;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- SUMMON ---- -->
+    <section class="tab-panel" id="summon">
+      <div class="card">
+        <h2>I · Noble Identity</h2>
+        <div class="row">
+          <div>
+            <label for="rank">Rank (scope of the quest)</label>
+            <select id="rank">
+              <option value="KNIGHT">Knight / Dame — one-file fixes</option>
+              <option value="BARON">Baron / Baroness — maintenance</option>
+              <option value="COUNT">Count / Countess — features</option>
+              <option value="VISCOUNT">Viscount / Viscountess — migrations</option>
+              <option value="DUKE" selected>Duke / Duchess — major features, architecture</option>
+              <option value="ARCHDUKE">Archduke / Archduchess — full rebuilds</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div><label for="house">House Number (1–3999)</label><input type="number" id="house" min="1" max="3999" value="46" /></div>
+          <div style="flex:0 0 auto;"><label>Roman Numeral</label><div class="roman-readout" id="romanReadout">XLVI</div></div>
+          <div><label for="nickname">Nickname (earned by deed — optional)</label><input type="text" id="nickname" placeholder="e.g. The Bridgekeeper" /></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>II · Select Your Court</h2>
+        <p style="margin-top:0;font-style:italic;font-size:0.9rem;">Check a role, pick its family lineage, and assign its task.</p>
+        <div id="courtList"><div class="notice">Reading the registry…</div></div>
+      </div>
+
+      <div class="card">
+        <h2>III · The Quest</h2>
+        <label for="questTitle">Quest Title</label>
+        <input type="text" id="questTitle" placeholder="e.g. Bridge the Nugget" />
+        <label for="questDesc">Quest Description</label>
+        <textarea id="questDesc" placeholder="Describe the deed to be done…"></textarea>
+      </div>
+
+      <div class="card">
+        <h2>IV · Warnings</h2>
+        <div id="warnPresets">
+          <div class="warn-check"><input type="checkbox" id="w1" value="Investigate before building — DETECTIVE before BLACKSMITH." checked /><label for="w1">Investigate before building</label></div>
+          <div class="warn-check"><input type="checkbox" id="w2" value="Verify all counts and math. Check every agent report." checked /><label for="w2">Verify all counts</label></div>
+          <div class="warn-check"><input type="checkbox" id="w3" value="Watch for port conflicts (remember the Port Conflict Dragon)." /><label for="w3">Watch for port conflicts</label></div>
+          <div class="warn-check"><input type="checkbox" id="w4" value="ARMARIUS handles ALL git. Touch no git directly." checked /><label for="w4">ARMARIUS handles all git</label></div>
+        </div>
+        <label for="customWarn">Custom Warning (optional)</label>
+        <input type="text" id="customWarn" placeholder="Add your own caution to the court…" />
+      </div>
+
+      <div style="text-align:center;margin-bottom:1.2rem;">
+        <button class="seal" id="generateBtn">🪶 Generate &amp; Summon</button>
+      </div>
+    </section>
+
+    <!-- ---- CHRONICLE ---- -->
+    <section class="tab-panel" id="chronicle"><div class="notice">Unrolling the chronicle…</div></section>
+
+    <!-- ---- HONORS ---- -->
+    <section class="tab-panel" id="honors"><div class="notice">Polishing the honors…</div></section>
+
+    <!-- ---- FAMILY TREE ---- -->
+    <section class="tab-panel" id="tree"><div class="notice">Tracing the bloodlines…</div></section>
+
+  </div><!-- /main-col -->
+
+  <!-- ============ LIVE FEED (persistent) ============ -->
+  <aside class="feed-col">
+    <div class="feed-panel">
+      <div class="feed-head">
+        <h2>📡 Live Feed</h2>
+        <span class="live-dot off" id="liveDot">○ connecting</span>
+      </div>
+      <div class="feed-list" id="feedList">
+        <div class="notice" style="color:var(--parchment)">Awaiting word from the court…</div>
+      </div>
+    </div>
+  </aside>
+
+</div><!-- /shell -->
+
+<!-- ===================== SUMMONS MODAL ===================== -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>📜 The Royal Summons</h2>
+      <div class="modal-actions">
+        <button class="minor" id="copyBtn">Copy</button>
+        <button class="minor" id="downloadBtn">Download .md</button>
+        <button class="minor" id="closeBtn" style="background:#6b2b25;">Close</button>
+      </div>
+    </div>
+    <pre class="summons" id="summonsText"></pre>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<footer>House ClaudeCode · INVESTIGATE. BUILD. VERIFY. VOW. REMEMBER.</footer>
+
+<script>
+/* ======================================================================
+   THE THRONE ROOM — unified single-page court app.
+   Talks to kingdom-server.js (same origin):
+     GET  /api/state      → all archives
+     GET  /api/events     → SSE live feed
+     POST /api/summon, /api/new-family, /api/new-role,
+          /api/extinct, /api/petition, /api/grant
+   Every fetch/SSE is guarded; missing data degrades gracefully.
+   ====================================================================== */
+
+/* ---------- small utilities ---------- */
+function escapeHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+  });
+}
+function missingNotice(name) {
+  return '<div class="notice">The archives for ' + escapeHtml(name) + ' are not yet scribed.</div>';
+}
+/* Guard for the server's {__missing}/{__error} placeholder objects. */
+function isBad(v) { return !v || v.__missing || v.__error; }
+function badNotice(v, name) {
+  if (!v) return missingNotice(name);
+  if (v.__error) return '<div class="err-notice">The ' + escapeHtml(name) + ' scroll is damaged: ' + escapeHtml(v.__error) + '</div>';
+  return missingNotice(name);
+}
+
+/* Roman numerals, 1..3999. */
+function toRoman(n) {
+  n = parseInt(n, 10);
+  if (isNaN(n) || n < 1 || n > 3999) return "—";
+  var table = [[1000,"M"],[900,"CM"],[500,"D"],[400,"CD"],[100,"C"],[90,"XC"],
+               [50,"L"],[40,"XL"],[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]];
+  var out = "";
+  for (var i = 0; i < table.length; i++) {
+    while (n >= table[i][0]) { out += table[i][1]; n -= table[i][0]; }
+  }
+  return out;
+}
+
+/* Relative time: "just now", "12s ago", "3m ago"… */
+function relTime(iso) {
+  var t = new Date(iso).getTime();
+  if (isNaN(t)) return "";
+  var d = Math.max(0, Math.floor((Date.now() - t) / 1000));
+  if (d < 5) return "just now";
+  if (d < 60) return d + "s ago";
+  if (d < 3600) return Math.floor(d / 60) + "m ago";
+  if (d < 86400) return Math.floor(d / 3600) + "h ago";
+  return Math.floor(d / 86400) + "d ago";
+}
+
+function toast(msg, ok) {
+  var box = document.getElementById("toasts");
+  var t = document.createElement("div");
+  t.className = "toast " + (ok ? "ok" : "fail");
+  t.textContent = msg;
+  box.appendChild(t);
+  setTimeout(function () { t.style.opacity = "0"; setTimeout(function () { t.remove(); }, 300); }, 4200);
+}
+
+/* POST helper — returns parsed JSON, never throws (returns {ok:false,error}). */
+async function apiPost(url, payload) {
+  try {
+    var res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok && data.ok === undefined) data.ok = false;
+    return data;
+  } catch (err) {
+    return { ok: false, error: "Network error: " + err.message };
+  }
+}
+
+/* ---------- global state ---------- */
+var STATE = null; // last /api/state response
+
+/* ======================================================================
+   TAB SWITCHING
+   ====================================================================== */
+document.querySelectorAll(".nav-btn").forEach(function (btn) {
+  btn.addEventListener("click", function () { showTab(btn.dataset.tab); });
+});
+function showTab(name) {
+  document.querySelectorAll(".nav-btn").forEach(function (b) { b.classList.toggle("active", b.dataset.tab === name); });
+  document.querySelectorAll(".tab-panel").forEach(function (p) { p.classList.toggle("active", p.id === name); });
+}
+document.getElementById("gotoSummon").addEventListener("click", function () { showTab("summon"); });
+
+/* ======================================================================
+   STATE LOAD + RENDER ALL TABS
+   ====================================================================== */
+async function loadState() {
+  try {
+    var res = await fetch("/api/state");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    STATE = await res.json();
+  } catch (err) {
+    console.warn("Could not load /api/state", err);
+    STATE = null;
+  }
+  renderAll();
+}
+
+function renderAll() {
+  renderHero();
+  renderCourt();
+  populateDecreeSelectors();
+  renderChronicle();
+  renderHonors();
+  renderTree();
+}
+
+/* ======================================================================
+   THRONE ROOM — hero + royal actions
+   ====================================================================== */
+function latestSession(sessions) {
+  if (isBad(sessions) || !Array.isArray(sessions.sessions) || !sessions.sessions.length) return null;
+  return sessions.sessions.slice().sort(function (a, b) { return (b.session || 0) - (a.session || 0); })[0];
+}
+
+function renderHero() {
+  var el = document.getElementById("heroPanel");
+  if (!STATE) { el.innerHTML = '<div class="err-notice">The Throne Room could not reach the archives. Is the server running?</div>'; return; }
+  var hat = STATE.hat;
+  var latest = latestSession(STATE.sessions);
+
+  var hatBlock;
+  if (!isBad(hat) && hat.current_bearer) {
+    var fc = hat.feather_count || 0;
+    hatBlock =
+      '<div class="big-hat">🎩</div>' +
+      '<div class="feather-row">' + ("🪶".repeat(fc) || "—") + "</div>" +
+      '<div class="bearer">' + escapeHtml(hat.current_bearer) + "</div>" +
+      '<div class="sub">Order of Merlin — ' + fc + ' feather' + (fc === 1 ? "" : "s") +
+        ', bearer since Session ' + escapeHtml(hat.session_awarded) + "</div>";
+  } else {
+    hatBlock = '<div class="big-hat">🎩</div><div class="sub">The Sacred Floppy Hat awaits its first bearer.</div>';
+  }
+
+  var sessionBlock = latest
+    ? '<div class="sub" style="margin-top:0.8rem;border-top:1px solid var(--gold-dim);padding-top:0.6rem;">' +
+        '📜 Latest recorded deed — <strong>Session ' + escapeHtml(latest.session) + '</strong>: ' +
+        escapeHtml(latest.noble) + ' — “' + escapeHtml(latest.quest) + '” <em>(' + escapeHtml(latest.outcome) + ')</em></div>'
+    : '<div class="sub" style="margin-top:0.8rem;">No sessions yet recorded.</div>';
+
+  el.innerHTML = '<h2>The Throne Room</h2>' + hatBlock + sessionBlock;
+}
+
+/* Populate role/family selects in the decree forms from the registry. */
+function populateDecreeSelectors() {
+  var reg = STATE && STATE.registry;
+  var roles = (!isBad(reg) && Array.isArray(reg.roles)) ? reg.roles : [];
+
+  var roleOpts = roles.length
+    ? roles.map(function (r) { return '<option value="' + escapeHtml(r.name) + '">' + escapeHtml((r.emoji || "") + " " + r.name) + "</option>"; }).join("")
+    : '<option value="">(no roles in registry)</option>';
+
+  var nfRole = document.getElementById("nf-role");
+  var exRole = document.getElementById("ex-role");
+  nfRole.innerHTML = roleOpts;
+  exRole.innerHTML = roleOpts;
+
+  // family select tracks the chosen role in the extinct form
+  function refreshExtinctFamilies() {
+    var key = (exRole.value || "").toLowerCase();
+    var fams = (!isBad(reg) && reg.families && reg.families[key]) || [];
+    document.getElementById("ex-family").innerHTML = fams.length
+      ? fams.map(function (f) { return '<option value="' + escapeHtml(f.name) + '">' + escapeHtml(f.name) +
+          (f.status && f.status !== "ACTIVE" ? " (" + escapeHtml(f.status) + ")" : "") + "</option>"; }).join("")
+      : '<option value="">(no families seated)</option>';
+  }
+  exRole.onchange = refreshExtinctFamilies;
+  refreshExtinctFamilies();
+}
+
+/* Wire the Royal Action buttons to toggle their inline decree forms. */
+document.querySelectorAll(".action-btn").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    var id = "form-" + btn.dataset.decree;
+    var target = document.getElementById(id);
+    var wasOpen = target.classList.contains("open");
+    document.querySelectorAll(".decree-form").forEach(function (f) { f.classList.remove("open"); });
+    if (!wasOpen) target.classList.add("open");
+  });
+});
+
+/* Show a decree's result inline. */
+function showDecreeOut(key, text, ok) {
+  var out = document.getElementById("out-" + key);
+  out.style.display = "block";
+  out.className = "decree-out" + (ok ? "" : " fail");
+  out.textContent = text;
+}
+
+/* Submit handlers for each decree. */
+document.querySelectorAll("[data-submit]").forEach(function (btn) {
+  btn.addEventListener("click", function () { submitDecree(btn.dataset.submit, btn); });
+});
+
+async function submitDecree(kind, btn) {
+  btn.disabled = true;
+  var orig = btn.textContent;
+  btn.textContent = "Issuing decree…";
+  var url, payload, key = kind;
+
+  try {
+    if (kind === "newfam") {
+      url = "/api/new-family";
+      payload = { role: document.getElementById("nf-role").value, family: document.getElementById("nf-family").value.trim() };
+      if (!payload.family) throw new Error("A family name is required.");
+    } else if (kind === "newrole") {
+      url = "/api/new-role";
+      payload = { name: document.getElementById("nr-name").value.trim() };
+      if (!payload.name) throw new Error("A role name is required.");
+    } else if (kind === "extinct") {
+      url = "/api/extinct";
+      payload = { role: document.getElementById("ex-role").value, family: document.getElementById("ex-family").value,
+                  reason: document.getElementById("ex-reason").value.trim() };
+      if (!payload.family) throw new Error("Choose a family to declare extinct.");
+    } else if (kind === "petition") {
+      url = "/api/petition";
+      payload = { agent: document.getElementById("pe-agent").value.trim(),
+                  honor: document.getElementById("pe-honor").value.trim(),
+                  session: document.getElementById("pe-session").value.trim() };
+      if (!payload.agent || !payload.honor) throw new Error("Agent and honor are required.");
+    } else if (kind === "grant") {
+      url = "/api/grant";
+      payload = { emoji: document.getElementById("gr-emoji").value.trim() || "🏅",
+                  honor: document.getElementById("gr-honor").value.trim(),
+                  recipient: document.getElementById("gr-recipient").value.trim(),
+                  reason: document.getElementById("gr-reason").value.trim(),
+                  granting_authority: "Duke ClaudeCode (Throne Room)" };
+      if (!payload.honor || !payload.recipient) throw new Error("Honor and recipient are required.");
+    }
+
+    var data = await apiPost(url, payload);
+    if (data.ok === false) {
+      showDecreeOut(key, "✗ " + (data.error || "The decree was refused."), false);
+      toast("Decree refused: " + (data.error || "unknown error"), false);
+    } else {
+      var body = data.output || (data.award ? JSON.stringify(data.award, null, 2) : "Decree carried out.");
+      showDecreeOut(key, "✓ " + body, true);
+      toast("Decree carried out.", true);
+      await loadState(); // refresh affected tabs
+    }
+  } catch (err) {
+    showDecreeOut(key, "✗ " + err.message, false);
+    toast(err.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
+
+/* ======================================================================
+   SUMMON — court builder
+   ====================================================================== */
+var houseInput = document.getElementById("house");
+var romanReadout = document.getElementById("romanReadout");
+houseInput.addEventListener("input", function () { romanReadout.textContent = toRoman(houseInput.value); });
+
+function renderCourt() {
+  var wrap = document.getElementById("courtList");
+  var reg = STATE && STATE.registry;
+  if (isBad(reg) || !Array.isArray(reg.roles)) { wrap.innerHTML = badNotice(reg, "the registry of roles"); return; }
+
+  wrap.innerHTML = "";
+  reg.roles.forEach(function (role) {
+    var key = role.name.toLowerCase();
+    var families = (reg.families && reg.families[key]) || [];
+
+    var item = document.createElement("div");
+    item.className = "court-item";
+    item.dataset.role = role.name;
+    item.dataset.emoji = role.emoji || "";
+
+    var famSelect;
+    if (families.length) {
+      var opts = families.map(function (f) {
+        return '<option value="' + escapeHtml(f.name) + '">' + escapeHtml(f.name) +
+               (f.status && f.status !== "ACTIVE" ? " (" + escapeHtml(f.status) + ")" : "") + "</option>";
+      }).join("");
+      famSelect = '<label>Family Lineage</label><select class="fam-select">' + opts + "</select>";
+    } else {
+      famSelect = '<label>Family Lineage</label><select class="fam-select"><option value="PRIME">PRIME (no lineage yet)</option></select>';
+    }
+
+    item.innerHTML =
+      '<label class="court-head">' +
+        '<input type="checkbox" class="court-check" />' +
+        '<span class="court-emoji">' + escapeHtml(role.emoji || "•") + "</span>" +
+        '<span class="court-name">' + escapeHtml(role.name) + "</span>" +
+        '<span class="court-tag">' + escapeHtml(role.tagline || "") + "</span>" +
+      "</label>" +
+      '<div class="court-detail">' + famSelect +
+        '<label>Task for this agent</label>' +
+        '<input type="text" class="fam-task" placeholder="What shall this ' + escapeHtml(role.name) + ' do?" />' +
+      "</div>";
+
+    var check = item.querySelector(".court-check");
+    check.addEventListener("change", function () { item.classList.toggle("checked", check.checked); });
+    wrap.appendChild(item);
+  });
+}
+
+function gatherCourt() {
+  var chosen = [];
+  document.querySelectorAll(".court-item").forEach(function (item) {
+    var check = item.querySelector(".court-check");
+    if (!check.checked) return;
+    chosen.push({
+      role: item.dataset.role,
+      family: item.querySelector(".fam-select").value,
+      task: item.querySelector(".fam-task").value.trim()
+    });
+  });
+  return chosen;
+}
+
+function gatherWarnings() {
+  var warns = [];
+  document.querySelectorAll("#warnPresets input:checked").forEach(function (cb) { warns.push(cb.value); });
+  var custom = document.getElementById("customWarn").value.trim();
+  if (custom) warns.push(custom);
+  return warns;
+}
+
+/* Modal wiring */
+var backdrop = document.getElementById("modalBackdrop");
+var summonsPre = document.getElementById("summonsText");
+document.getElementById("closeBtn").addEventListener("click", function () { backdrop.classList.remove("open"); });
+backdrop.addEventListener("click", function (e) { if (e.target === backdrop) backdrop.classList.remove("open"); });
+
+document.getElementById("generateBtn").addEventListener("click", async function () {
+  var btn = this;
+  btn.disabled = true;
+  var orig = btn.textContent;
+  btn.textContent = "Summoning…";
+  try {
+    var payload = {
+      rank: document.getElementById("rank").value,
+      house: parseInt(houseInput.value, 10) || 1,
+      nickname: document.getElementById("nickname").value.trim(),
+      title: document.getElementById("questTitle").value.trim() || "(untitled quest)",
+      description: document.getElementById("questDesc").value.trim(),
+      court: gatherCourt(),
+      warnings: gatherWarnings()
+    };
+    var data = await apiPost("/api/summon", payload);
+    if (data.ok === false || !data.summons) {
+      toast("Summons failed: " + (data.error || "no text returned"), false);
+    } else {
+      summonsPre.textContent = data.summons;
+      summonsPre.dataset.file = data.file || ("summons-" + toRoman(payload.house) + ".md");
+      backdrop.classList.add("open");
+      // The court agents announce themselves in the live feed automatically.
+      await loadState(); // a new summons may be persisted; refresh chronicle context
+    }
+  } catch (err) {
+    toast("Summons error: " + err.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+});
+
+document.getElementById("copyBtn").addEventListener("click", function () {
+  var text = summonsPre.textContent, btn = this;
+  function ok() { btn.textContent = "Copied!"; setTimeout(function () { btn.textContent = "Copy"; }, 1500); }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(ok, function () { fallbackCopy(text); ok(); });
+  } else { fallbackCopy(text); ok(); }
+});
+function fallbackCopy(text) {
+  var ta = document.createElement("textarea");
+  ta.value = text; document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
+}
+document.getElementById("downloadBtn").addEventListener("click", function () {
+  var text = summonsPre.textContent;
+  var blob = new Blob([text], { type: "text/markdown" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = summonsPre.dataset.file || "summons.md";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+/* ======================================================================
+   CHRONICLE
+   ====================================================================== */
+function renderChronicle() {
+  var el = document.getElementById("chronicle");
+  var data = STATE && STATE.sessions;
+  if (isBad(data) || !Array.isArray(data.sessions) || !data.sessions.length) {
+    el.innerHTML = '<div class="card">' + badNotice(data, "the Chronicle") + "</div>";
+    return;
+  }
+  var sessions = data.sessions.slice().sort(function (a, b) { return (b.session || 0) - (a.session || 0); });
+  el.innerHTML = sessions.map(function (s) {
+    var outClass = "out-" + String(s.outcome || "").toUpperCase();
+    var medals = (s.medals || []).map(function (m) { return '<span class="medal-chip">🏅 ' + escapeHtml(m) + "</span>"; }).join("");
+    var court = (s.court || []).map(function (c) { return '<span class="court-chip">' + escapeHtml(c) + "</span>"; }).join("");
+    var courtCount = (s.court || []).length;
+    var viol = (s.vow_violations && s.vow_violations.length)
+      ? '<div class="violation">⚠ Vow violation: ' + (s.vow_violations || []).map(escapeHtml).join("; ") + "</div>" : "";
+    return '<div class="card session-card">' +
+      '<div class="session-num">' + escapeHtml(s.session) + '<small>session</small></div>' +
+      "<div>" +
+        '<div class="noble-name">' + escapeHtml(s.noble) +
+          ' <span class="badge ' + outClass + '">' + escapeHtml(s.outcome) + "</span></div>" +
+        '<div class="quest-text">“' + escapeHtml(s.quest) + '”</div>' +
+        '<div class="meta-row"><span><b>Court (' + courtCount + "):</b></span>" + court + "</div>" +
+        (medals ? '<div class="meta-row" style="margin-top:0.4rem;">' + medals + "</div>" : "") +
+        (s.notes ? '<div style="margin-top:0.5rem;font-size:0.9rem;opacity:0.85;">' + escapeHtml(s.notes) + "</div>" : "") +
+        viol +
+      "</div></div>";
+  }).join("");
+}
+
+/* ======================================================================
+   HONORS — Hat, Broom, awards by tier, catalog legend
+   ====================================================================== */
+function renderHonors() {
+  var el = document.getElementById("honors");
+  var hat = STATE && STATE.hat, broom = STATE && STATE.broom,
+      awarded = STATE && STATE.awarded, catalog = STATE && STATE.catalog;
+  var html = "";
+
+  /* --- The Hat --- */
+  if (!isBad(hat) && hat.current_bearer) {
+    var fc = hat.feather_count || 0;
+    var featherRow = "🪶".repeat(fc) || "—";
+    var feathers = (hat.feathers || []).map(function (f) {
+      return '<li><span class="ftype">🪶 ' + escapeHtml(f.type) + "</span> — " + escapeHtml(f.description) +
+             " <em>(Session " + escapeHtml(f.session) + ", by " + escapeHtml(f.granted_by) + ")</em></li>";
+    }).join("");
+    var lineage = (hat.hat_history || []).map(function (h) {
+      return "<li>🎩 <strong>" + escapeHtml(h.bearer) + "</strong> — inducted Session " + escapeHtml(h.session_inducted) +
+             ", " + escapeHtml(h.feathers_accumulated) + " feather(s). <em>" + escapeHtml(h.reason) + "</em>" +
+             (h.passed_to ? "<br>↳ " + escapeHtml(h.passed_to) : "") + "</li>";
+    }).join("");
+    html += '<div class="card hat-display"><div class="big-hat">🎩</div>' +
+        '<div class="feather-row">' + featherRow + "</div>" +
+        '<div class="bearer-name">' + escapeHtml(hat.current_bearer) + "</div>" +
+        '<div style="font-size:0.85rem;opacity:0.8;">Order of Merlin — bearer since Session ' +
+          escapeHtml(hat.session_awarded) + " · " + fc + " feathers</div>" +
+        (feathers ? '<ul class="feather-list">' + feathers + "</ul>" : "") + "</div>";
+    if (lineage) {
+      html += '<div class="card"><h3>🎩 The Lineage of the Hat</h3><ul class="lineage">' + lineage +
+              "<li>↳ <strong>" + escapeHtml(hat.current_bearer) + "</strong> (current bearer)</li></ul></div>";
+    }
+  } else {
+    html += '<div class="card"><h3>🎩 The Sacred Floppy Hat</h3>' + badNotice(hat, "the Sacred Floppy Hat") + "</div>";
+  }
+
+  /* --- The Broom --- */
+  if (!isBad(broom) && Array.isArray(broom.recipients) && broom.recipients.length) {
+    var rows = broom.recipients.map(function (r) {
+      return "<li>🧹 <strong>" + escapeHtml(r.recipient) + "</strong> — Session " + escapeHtml(r.session) +
+             ". <em>" + escapeHtml(r.reason) + "</em> (by " + escapeHtml(r.granted_by) + ")</li>";
+    }).join("");
+    html += '<div class="card"><h3>🧹 The Broom of Distinction</h3>' +
+            '<div style="font-size:0.9rem;opacity:0.85;margin-bottom:0.4rem;">Current bearer: <strong>' +
+              escapeHtml(broom.current_bearer) + "</strong></div><ul class=\"lineage\">" + rows + "</ul></div>";
+  } else {
+    html += '<div class="card"><h3>🧹 The Broom of Distinction</h3>' + badNotice(broom, "the Broom") + "</div>";
+  }
+
+  /* --- Awards grouped by tier --- */
+  if (!isBad(awarded) && Array.isArray(awarded.awards) && awarded.awards.length) {
+    var tierOrder = ["ORDER", "EPIC", "STANDARD", "MINOR", "FAMILY", "INFORMAL"];
+    var groups = {};
+    awarded.awards.forEach(function (a) {
+      var t = String(a.tier || "OTHER").toUpperCase();
+      (groups[t] = groups[t] || []).push(a);
+    });
+    var tiers = tierOrder.filter(function (t) { return groups[t]; })
+      .concat(Object.keys(groups).filter(function (t) { return tierOrder.indexOf(t) === -1; }));
+    var aw = '<div class="card"><h3>🏆 The Roster of Honors</h3>';
+    tiers.forEach(function (t) {
+      aw += '<div class="tier-group"><div class="tier-head">' + escapeHtml(t) + " TIER</div>";
+      groups[t].forEach(function (a) {
+        var isBatman = /batman/i.test(a.granting_authority || "");
+        var authTag = '<span class="auth-tag ' + (isBatman ? "auth-batman" : "auth-duke") + '">' +
+                      escapeHtml(a.granting_authority || "—") + (a.batman_ratified ? " ✓" : "") + "</span>";
+        var selfTag = a.self_claimed ? '<span class="self-claim">😤 SELF-CLAIMED</span>' : "";
+        aw += '<div class="award-row"><span class="award-emoji">' + escapeHtml(a.emoji || "🏅") + "</span><span>" +
+              '<span class="award-name">' + escapeHtml(a.honor) + "</span> " +
+              '<span class="award-recipient">→ ' + escapeHtml(a.recipient) + " <em>(S" + escapeHtml(a.session) + ")</em></span>" +
+              "</span>" + authTag + selfTag + "</div>";
+      });
+      aw += "</div>";
+    });
+    aw += "</div>";
+    html += aw;
+  } else {
+    html += '<div class="card"><h3>🏆 The Roster of Honors</h3>' + badNotice(awarded, "awarded honors") + "</div>";
+  }
+
+  /* --- Catalog legend (reference) --- */
+  if (!isBad(catalog) && Array.isArray(catalog.honors) && catalog.honors.length) {
+    var legend = catalog.honors.map(function (h) {
+      return '<div class="legend-row"><span class="le">' + escapeHtml(h.emoji) + "</span><span><strong>" +
+             escapeHtml(h.name) + "</strong> <em>(" + escapeHtml(h.tier) + ")</em> — " + escapeHtml(h.description) + "</span></div>";
+    }).join("");
+    html += '<div class="card"><h3>📖 Catalog of Honors (reference)</h3>' + legend + "</div>";
+  }
+
+  el.innerHTML = html;
+}
+
+/* ======================================================================
+   FAMILY TREE — families grouped by role, extinct in grey
+   ====================================================================== */
+function renderTree() {
+  var el = document.getElementById("tree");
+  var registry = STATE && STATE.registry, extinctions = STATE && STATE.extinctions;
+  if (isBad(registry) || !Array.isArray(registry.roles)) {
+    el.innerHTML = '<div class="card">' + badNotice(registry, "the Family Tree") + "</div>";
+    return;
+  }
+
+  // Lookup of extinct families from extinctions.json (role::FAMILY -> entry).
+  var extMap = {};
+  if (!isBad(extinctions) && Array.isArray(extinctions.extinctions)) {
+    extinctions.extinctions.forEach(function (e) {
+      extMap[(e.role || "").toLowerCase() + "::" + (e.family || "").toUpperCase()] = e;
+    });
+  }
+
+  var families = registry.families || {};
+  var html = "";
+
+  registry.roles.forEach(function (role) {
+    var key = role.name.toLowerCase();
+    var fams = (families[key] || []).slice();
+    if (!fams.length) return;
+
+    // Keep the two BLACKSMITH families adjacent to highlight divergence.
+    if (key === "blacksmith") {
+      var order = { "IRONFORGE": 0, "HAMMERFALL": 1 };
+      fams.sort(function (a, b) {
+        var ai = order[(a.name || "").toUpperCase()], bi = order[(b.name || "").toUpperCase()];
+        return (ai == null ? 99 : ai) - (bi == null ? 99 : bi);
+      });
+    }
+
+    var cards = fams.map(function (f) {
+      var ext = extMap[key + "::" + (f.name || "").toUpperCase()];
+      var isExtinct = (f.status === "EXTINCT") || !!ext;
+      var status = isExtinct ? "EXTINCT" : (f.status || "ACTIVE");
+      var wins = f.victories != null ? f.victories : "?";
+      var losses = f.failures != null ? f.failures : "?";
+      var notable = (f.notable_sessions || []).join(", ") || "—";
+      var deathNote = "";
+      if (isExtinct) {
+        var reason = (ext && ext.reason) ? ext.reason : "Declared extinct; skills archived.";
+        var dS = (ext && ext.session) ? " (Session " + escapeHtml(ext.session) + ")" : "";
+        deathNote = '<div class="death-note">🕯️ <strong>Death note' + dS + ':</strong> ' + escapeHtml(reason) + "</div>";
+      }
+      return '<div class="family-card' + (isExtinct ? " extinct" : "") + '">' +
+          "<h4>" + escapeHtml(f.name) + '<span class="status-badge ' + escapeHtml(status) + '">' + escapeHtml(status) + "</span></h4>" +
+          '<div class="fam-philosophy">“' + escapeHtml(f.philosophy) + '”</div>' +
+          '<div class="fam-stats">' +
+            "<span><b>Skills:</b> " + escapeHtml(f.skill_count) + "</span>" +
+            "<span><b>Founded:</b> S" + escapeHtml(f.founded_session) + "</span>" +
+            "<span><b>Served:</b> " + escapeHtml(f.sessions_served) + "</span>" +
+            "<span><b>Record:</b> " + escapeHtml(wins) + "W / " + escapeHtml(losses) + "L</span>" +
+            "<span><b>Vows broken:</b> " + escapeHtml(f.vow_violations) + "</span>" +
+          "</div>" +
+          '<div class="fam-stats" style="margin-top:0.3rem;"><span><b>Notable:</b> S' + escapeHtml(notable) + "</span></div>" +
+          deathNote + "</div>";
+    }).join("");
+
+    html += '<div class="role-block"><div class="role-title">' + escapeHtml(role.emoji || "") + " " + escapeHtml(role.name) +
+            ' <span style="font-size:0.8rem;opacity:0.7;font-family:\'IM Fell English\';">— ' +
+            escapeHtml(role.tagline || "") + "</span></div>" +
+            '<div class="family-grid">' + cards + "</div></div>";
+  });
+
+  el.innerHTML = html || missingNotice("the Family Tree");
+}
+
+/* ======================================================================
+   LIVE FEED — Server-Sent Events
+   ====================================================================== */
+var seenIds = {};       // dedupe by event id
+var feedRendered = false;
+var feedEl = document.getElementById("feedList");
+var liveDot = document.getElementById("liveDot");
+
+function setLive(on) {
+  liveDot.className = "live-dot " + (on ? "on" : "off");
+  liveDot.textContent = on ? "● live" : "○ reconnecting";
+}
+
+function addFeedItem(ev) {
+  // Dedupe: ignore repeats and the id:0 connection greeting duplicates.
+  if (ev.id !== 0 && seenIds[ev.id]) return;
+  if (ev.id !== 0) seenIds[ev.id] = true;
+
+  if (!feedRendered) { feedEl.innerHTML = ""; feedRendered = true; }
+
+  var item = document.createElement("div");
+  item.className = "feed-item k-" + escapeHtml(ev.kind || "server");
+  item.dataset.ts = ev.ts || "";
+  item.innerHTML =
+    '<div class="fi-top"><span class="fi-icon">' + escapeHtml(ev.icon || "•") + "</span>" +
+      '<span class="fi-title">' + escapeHtml(ev.title || "") + "</span></div>" +
+    (ev.detail ? '<div class="fi-detail">' + escapeHtml(ev.detail) + "</div>" : "") +
+    '<div class="fi-time">' + relTime(ev.ts) + "</div>";
+  feedEl.insertBefore(item, feedEl.firstChild); // newest on top
+}
+
+/* Refresh relative timestamps periodically. */
+setInterval(function () {
+  document.querySelectorAll("#feedList .feed-item").forEach(function (it) {
+    var t = it.querySelector(".fi-time");
+    if (t && it.dataset.ts) t.textContent = relTime(it.dataset.ts);
+  });
+}, 10000);
+
+function connectFeed() {
+  var es;
+  try {
+    es = new EventSource("/api/events");
+  } catch (err) {
+    setLive(false);
+    return;
+  }
+  es.addEventListener("kingdom", function (e) {
+    try {
+      var ev = JSON.parse(e.data);
+      addFeedItem(ev);
+      // A backend action just happened — refresh state so tabs stay current.
+      if (ev.id !== 0 && ev.kind && ev.kind !== "server") {
+        scheduleStateRefresh();
+      }
+    } catch (err) { /* ignore malformed frame */ }
+  });
+  es.onopen = function () { setLive(true); };
+  es.onerror = function () { setLive(false); }; // EventSource auto-reconnects
+}
+
+/* Debounce state refreshes triggered by feed events (avoid hammering). */
+var refreshTimer = null;
+function scheduleStateRefresh() {
+  if (refreshTimer) return;
+  refreshTimer = setTimeout(function () { refreshTimer = null; loadState(); }, 800);
+}
+
+/* ======================================================================
+   BOOT
+   ====================================================================== */
+(function init() {
+  loadState();
+  connectFeed();
+})();
+</script>
+</body>
+</html>

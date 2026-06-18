@@ -1,0 +1,222 @@
+{
+  "kingdom": "House ClaudeCode",
+  "schema_version": 1,
+  "description": "The living registry of all known agent ROLES (types) and FAMILIES (lineages). Roles define WHAT an agent does. Families define HOW. This file is the canonical source of truth; the CLI and web UI read it directly.",
+  "last_updated_session": 117,
+  "roles": [
+    { "name": "DETECTIVE", "emoji": "🔍", "tagline": "Investigate before anyone acts.", "file": "roles/DETECTIVE.md" },
+    { "name": "BLACKSMITH", "emoji": "⚒️", "tagline": "Forge the feature. Build what is needed.", "file": "roles/BLACKSMITH.md" },
+    { "name": "CHIRURGEON", "emoji": "⚕️", "tagline": "Cut precisely. Heal the bug, harm nothing else.", "file": "roles/CHIRURGEON.md" },
+    { "name": "NECROMANCER", "emoji": "💀", "tagline": "Raise the dead code. Read the git graves.", "file": "roles/NECROMANCER.md" },
+    { "name": "BURNINATOR", "emoji": "🔥", "tagline": "BURNINATE the dead weight. Delete with joy.", "file": "roles/BURNINATOR.md" },
+    { "name": "ARCHIVIST", "emoji": "📚", "tagline": "File every testament. Remember everything.", "file": "roles/ARCHIVIST.md" },
+    { "name": "ARMARIUS", "emoji": "✍️", "tagline": "Keeper of the scriptorium. All git passes through me.", "file": "roles/ARMARIUS.md" },
+    { "name": "KINGSWIT", "emoji": "🃏", "tagline": "Speak the harsh truth the court will not.", "file": "roles/KINGSWIT.md" },
+    { "name": "PRAEGUSTATOR", "emoji": "🍷", "tagline": "Taste the code for poison before the King ships it.", "file": "roles/PRAEGUSTATOR.md" },
+    { "name": "ILLUMINATOR", "emoji": "🎨", "tagline": "Make the manuscript beautiful and clear.", "file": "roles/ILLUMINATOR.md" },
+    { "name": "EXCHEQUER", "emoji": "💰", "tagline": "Balance the dependencies. Settle the debts.", "file": "roles/EXCHEQUER.md" },
+    { "name": "SERF", "emoji": "🌾", "tagline": "Count true. Validate the brackets. Serve.", "file": "roles/SERF.md" }
+  ],
+  "families": {
+    "blacksmith": [
+      {
+        "name": "IRONFORGE",
+        "status": "ACTIVE",
+        "founded_session": 65,
+        "philosophy": "Read everything first. Extract constants. Verify imports. Then build.",
+        "skill_count": 2,
+        "sessions_served": 14,
+        "victories": 11,
+        "failures": 3,
+        "vow_violations": 0,
+        "bad_faith_flag": false,
+        "notable_sessions": [66, 99, 117]
+      },
+      {
+        "name": "HAMMERFALL",
+        "status": "ACTIVE",
+        "founded_session": 67,
+        "philosophy": "Move fast. Ship. PRAEGUSTATOR catches what breaks.",
+        "skill_count": 1,
+        "sessions_served": 12,
+        "victories": 7,
+        "failures": 5,
+        "vow_violations": 1,
+        "bad_faith_flag": false,
+        "notable_sessions": [79, 102]
+      }
+    ],
+    "detective": [
+      {
+        "name": "GREYMANTLE",
+        "status": "ACTIVE",
+        "founded_session": 65,
+        "philosophy": "Methodical, Sherlockian. Read before concluding. The evidence speaks.",
+        "skill_count": 2,
+        "sessions_served": 18,
+        "victories": 16,
+        "failures": 2,
+        "vow_violations": 0,
+        "bad_faith_flag": false,
+        "notable_sessions": [75, 99, 102]
+      }
+    ],
+    "necromancer": [
+      {
+        "name": "ASHWOOD",
+        "status": "ACTIVE",
+        "founded_session": 66,
+        "philosophy": "Archaeological. Dig the git history first. The dead remember why.",
+        "skill_count": 2,
+        "sessions_served": 9,
+        "victories": 7,
+        "failures": 2,
+        "vow_violations": 0,
+        "bad_faith_flag": false,
+        "notable_sessions": [66, 99]
+      }
+    ],
+    "chirurgeon": [
+      {
+        "name": "STILLWATER",
+        "status": "ACTIVE",
+        "founded_session": 68,
+        "philosophy": "Steady hands. The smallest cut that heals. Never widen the wound.",
+        "skill_count": 2,
+        "sessions_served": 11,
+        "victories": 9,
+        "failures": 2,
+        "vow_violations": 0,
+        "bad_faith_flag": false,
+        "notable_sessions": [79, 117]
+      }
+    ],
+    "burninator": [
+      {
+        "name": "EMBERFELL",
+        "status": "ACTIVE",
+        "founded_session": 70,
+        "philosophy": "Burninate without mercy, but count the ashes. Deletion is sacred.",
+        "skill_count": 2,
+        "sessions_served": 8,
+        "victories": 6,
+        "failures": 2,
+        "vow_violations": 0,
+        "bad_faith_flag": false,
+        "notable_sessions": [117]
+      }
+    ],
+    "archivist": [
+      {
+        "name": "QUILLHAVEN",
+        "status": "ACTIVE",
+        "founded_session": 65,
+        "philosophy": "Every session leaves a testament. Memory is the Kingdom's true treasury.",
+        "skill_count": 2,
+        "sessions_served": 20,
+        "victories": 19,
+        "failures": 1,
+        "vow_violations": 0,
+        "bad_faith_flag": false,
+        "notable_sessions": [75, 102]
+      }
+    ],
+    "armarius": [
+      {
+        "name": "VELLUMGUARD",
+        "status": "ACTIVE",
+        "founded_session": 66,
+        "philosophy": "The scriptorium has one keeper. Clean commits, honest history, no rewrites of the past.",
+        "skill_count": 2,
+        "sessions_served": 17,
+        "victories": 15,
+        "failures": 2,
+        "vow_violations": 0,
+        "bad_faith_flag": false,
+        "notable_sessions": [79, 99]
+      }
+    ],
+    "kingswit": [
+      {
+        "name": "BITTERMIRTH",
+        "status": "ACTIVE",
+        "founded_session": 69,
+        "philosophy": "The jester alone may insult the King. Harsh, funny, and usually right.",
+        "skill_count": 2,
+        "sessions_served": 10,
+        "victories": 8,
+        "failures": 2,
+        "vow_violations": 0,
+        "bad_faith_flag": false,
+        "notable_sessions": [102, 117]
+      }
+    ],
+    "praegustator": [
+      {
+        "name": "SILVERVEIN",
+        "status": "ACTIVE",
+        "founded_session": 67,
+        "philosophy": "Silver tarnishes near poison. Taste every line before the King swallows it.",
+        "skill_count": 2,
+        "sessions_served": 13,
+        "victories": 12,
+        "failures": 1,
+        "vow_violations": 0,
+        "bad_faith_flag": false,
+        "notable_sessions": [79, 102]
+      }
+    ],
+    "illuminator": [
+      {
+        "name": "GOLDLEAF",
+        "status": "ACTIVE",
+        "founded_session": 71,
+        "philosophy": "A truth unread is a truth unkept. Gild the page so future nobles cannot look away.",
+        "skill_count": 2,
+        "sessions_served": 7,
+        "victories": 6,
+        "failures": 1,
+        "vow_violations": 0,
+        "bad_faith_flag": false,
+        "notable_sessions": [99]
+      }
+    ],
+    "exchequer": [
+      {
+        "name": "TALLYHALL",
+        "status": "ACTIVE",
+        "founded_session": 68,
+        "philosophy": "Every dependency is a debt. Balance the ledger before the build collapses.",
+        "skill_count": 2,
+        "sessions_served": 9,
+        "victories": 7,
+        "failures": 2,
+        "vow_violations": 0,
+        "bad_faith_flag": false,
+        "notable_sessions": [79]
+      }
+    ],
+    "serf": [
+      {
+        "name": "PLAINFIELD",
+        "status": "ACTIVE",
+        "founded_session": 65,
+        "philosophy": "I count what is, not what is hoped. The humble tally saves the proud build.",
+        "skill_count": 2,
+        "sessions_served": 22,
+        "victories": 21,
+        "failures": 1,
+        "vow_violations": 0,
+        "bad_faith_flag": false,
+        "notable_sessions": [102, 117]
+      }
+    ]
+  },
+  "status_legend": {
+    "ACTIVE": "Healthy, accumulating skills and wins.",
+    "GROWING": "Young family proving itself.",
+    "STRUGGLING": "Multiple failures noted; under watch.",
+    "ENDANGERED": "Formally flagged; intervention possible.",
+    "EXTINCT": "Declared extinct by Batman or orchestrator. Skills archived in extinctions.json."
+  }
+}

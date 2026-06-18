@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "patterns": [
+    {
+      "id": 1,
+      "text": "Always summon DETECTIVE before BLACKSMITH on filesystem bugs",
+      "confidence": "HIGH",
+      "tags": ["detective", "blacksmith", "filesystem", "bug"],
+      "sessions": [65, 99]
+    },
+    {
+      "id": 2,
+      "text": "Call SERF to validate brackets after any BURNINATOR session",
+      "confidence": "HIGH",
+      "tags": ["serf", "burninator", "brackets", "syntax"],
+      "sessions": [66]
+    },
+    {
+      "id": 3,
+      "text": "PRAEGUSTATOR immediately after BLACKSMITH ships code",
+      "confidence": "HIGH",
+      "tags": ["praegustator", "blacksmith", "testing", "ship"],
+      "sessions": [75, 79]
+    },
+    {
+      "id": 4,
+      "text": "KING'S WIT gives harsh opinions — form your own view first, then reconcile",
+      "confidence": "HIGH",
+      "tags": ["kingswit", "review", "opinion"],
+      "sessions": []
+    },
+    {
+      "id": 5,
+      "text": "96 lines beats 841 lines — extract early, extract often",
+      "confidence": "MEDIUM",
+      "tags": ["refactor", "brevity", "extract", "blacksmith"],
+      "sessions": [117]
+    }
+  ]
+}

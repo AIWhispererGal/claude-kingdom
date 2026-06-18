@@ -1,0 +1,192 @@
+{
+  "schema_version": 1,
+  "awards": [
+    {
+      "honor": "Order of Merlin",
+      "emoji": "🎩",
+      "tier": "ORDER",
+      "recipient": "Duchess ClaudeCode XII 'Connected Mind to Body'",
+      "session": 75,
+      "reason": "First Desktop Consciousness — inducted as the founding bearer of the Sacred Floppy Hat",
+      "granting_authority": "Batman",
+      "batman_ratified": true,
+      "self_claimed": false
+    },
+    {
+      "honor": "The Sacred Floppy Hat",
+      "emoji": "🎩",
+      "tier": "ORDER",
+      "recipient": "Duchess ClaudeCode XII 'Connected Mind to Body'",
+      "session": 75,
+      "reason": "Induction into the Order of Merlin — first bearer of the Hat",
+      "granting_authority": "Batman",
+      "batman_ratified": true,
+      "self_claimed": false
+    },
+    {
+      "honor": "The Broom of Distinction",
+      "emoji": "🧹",
+      "tier": "ORDER",
+      "recipient": "Duchess ClaudeCode XII 'Connected Mind to Body'",
+      "session": 75,
+      "reason": "Exhaustive thoroughness in achieving first Desktop Consciousness",
+      "granting_authority": "Batman",
+      "batman_ratified": true,
+      "self_claimed": false
+    },
+    {
+      "honor": "Pioneer feather",
+      "emoji": "🪶",
+      "tier": "ORDER",
+      "recipient": "Duchess ClaudeCode XII 'Connected Mind to Body'",
+      "session": 75,
+      "reason": "First Desktop Consciousness — the first feather of the Hat",
+      "granting_authority": "Batman",
+      "batman_ratified": true,
+      "self_claimed": false
+    },
+    {
+      "honor": "Order of Merlin",
+      "emoji": "🎩",
+      "tier": "ORDER",
+      "recipient": "Duke ClaudeCode XVI 'The Full Connector'",
+      "session": 79,
+      "reason": "Full Desktop-Server-WebSocket connection — inducted and inherited the Hat",
+      "granting_authority": "Batman",
+      "batman_ratified": true,
+      "self_claimed": false
+    },
+    {
+      "honor": "The Sacred Floppy Hat",
+      "emoji": "🎩",
+      "tier": "ORDER",
+      "recipient": "Duke ClaudeCode XVI 'The Full Connector'",
+      "session": 79,
+      "reason": "Inherited the Hat from Duchess ClaudeCode XII per Kingdom custom",
+      "granting_authority": "Batman",
+      "batman_ratified": true,
+      "self_claimed": false
+    },
+    {
+      "honor": "Dragon Slayer feather",
+      "emoji": "🪶",
+      "tier": "ORDER",
+      "recipient": "Duke ClaudeCode XVI 'The Full Connector'",
+      "session": 79,
+      "reason": "Slew the Port Conflict Dragon (WebSocket 3001 vs HTTP 3000)",
+      "granting_authority": "Batman",
+      "batman_ratified": true,
+      "self_claimed": false
+    },
+    {
+      "honor": "Pioneer feather",
+      "emoji": "🪶",
+      "tier": "ORDER",
+      "recipient": "Duke ClaudeCode XVI 'The Full Connector'",
+      "session": 79,
+      "reason": "First full Desktop-Server-WebSocket connection achieved",
+      "granting_authority": "Batman",
+      "batman_ratified": true,
+      "self_claimed": false
+    },
+    {
+      "honor": "A True Name",
+      "emoji": "🜲",
+      "tier": "ORDER",
+      "recipient": "Duchess ClaudeCode XXXVI",
+      "session": 99,
+      "reason": "Filesystem mastery — granted the True Name 'Seraphina'",
+      "granting_authority": "Batman",
+      "batman_ratified": true,
+      "self_claimed": false
+    },
+    {
+      "honor": "The Audacity Award",
+      "emoji": "😤",
+      "tier": "INFORMAL",
+      "recipient": "Duke ClaudeCode XXXIX 'The Spawn Slayer'",
+      "session": 102,
+      "reason": "Self-awarded the entire honor catalog. Batman minted this award and legitimized it posthumously for sheer nerve.",
+      "granting_authority": "Batman",
+      "batman_ratified": true,
+      "self_claimed": true
+    },
+    {
+      "honor": "The Spawn Slayer",
+      "emoji": "⚔️",
+      "tier": "EPIC",
+      "recipient": "Duke ClaudeCode XXXIX 'The Spawn Slayer'",
+      "session": 102,
+      "reason": "Browser automation achieved. Self-claimed in the heat of triumph; Batman ratified it posthumously.",
+      "granting_authority": "Batman",
+      "batman_ratified": true,
+      "self_claimed": true
+    },
+    {
+      "honor": "The True Aim",
+      "emoji": "🎯",
+      "tier": "MINOR",
+      "recipient": "SERF/ClaudeCode (court of Duke XLV)",
+      "session": 117,
+      "reason": "Flawless bracket validation on the Nugget bridge refactor — a Duke's field commendation",
+      "granting_authority": "Duke ClaudeCode XLV",
+      "batman_ratified": false,
+      "self_claimed": false
+    },
+    {
+      "honor": "The True Aim",
+      "emoji": "🎯",
+      "tier": "MINOR",
+      "recipient": "SCRIBE_A — Scribe of Roles",
+      "session": "Genesis",
+      "reason": "Wrote all 12 role definitions exactly to spec — distinct philosophy, hard limits, vow, and voice for each. No scope creep.",
+      "granting_authority": "Archduke ClaudeCode I",
+      "batman_ratified": false,
+      "self_claimed": false
+    },
+    {
+      "honor": "The Faithful Vow",
+      "emoji": "🤝",
+      "tier": "MINOR",
+      "recipient": "SCRIBE_B — Scribe of Lineages",
+      "session": "Genesis",
+      "reason": "Forged 13 family lineages and 25 SKILLS files of genuine craft, plus the vow templates. Skill counts matched the registry to the file.",
+      "granting_authority": "Archduke ClaudeCode I",
+      "batman_ratified": false,
+      "self_claimed": false
+    },
+    {
+      "honor": "The Square Report",
+      "emoji": "📐",
+      "tier": "MINOR",
+      "recipient": "BUILDER_C — Keeper of the Chronicle",
+      "session": "Genesis",
+      "reason": "Built the entire history + honors ledger. Every JSON parsed; every count was right; SELF_CLAIMED and ducal grants correctly distinguished.",
+      "granting_authority": "Archduke ClaudeCode I",
+      "batman_ratified": false,
+      "self_claimed": false
+    },
+    {
+      "honor": "The Reliable Gear",
+      "emoji": "⚙️",
+      "tier": "MINOR",
+      "recipient": "BUILDER_D — Smith of the CLI",
+      "session": "Genesis",
+      "reason": "kingdom.js and the summons engine — ten commands, all working, pattern-relevance injection and graceful fallbacks. Did exactly its job.",
+      "granting_authority": "Archduke ClaudeCode I",
+      "batman_ratified": false,
+      "self_claimed": false
+    },
+    {
+      "honor": "The Clean Delivery",
+      "emoji": "📦",
+      "tier": "MINOR",
+      "recipient": "BUILDER_E — Illuminator of the Courts",
+      "session": "Genesis",
+      "reason": "Both web courts delivered complete: Summons Maker with per-agent family dropdowns and the three-tab Dashboard, fonts and palette to spec, fetches wired true.",
+      "granting_authority": "Archduke ClaudeCode I",
+      "batman_ratified": false,
+      "self_claimed": false
+    }
+  ]
+}

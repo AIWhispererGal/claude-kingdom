@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Summons Generator V3 - Enhanced Format</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1a0f0a 0%, #4a2c17 100%);
+            color: #f4f1e8;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(30, 20, 10, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            border: 3px solid #DAA520;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #DAA520;
+            padding-bottom: 20px;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            color: #DAA520;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #DDD;
+            font-style: italic;
+        }
+        
+        .version-badge {
+            background: linear-gradient(135deg, #8B0000, #DC143C);
+            color: #FFD700;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: 15px;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(139, 0, 0, 0.5);
+        }
+        
+        .form-section {
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #DAA520;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #DAA520;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #DAA520;
+            font-size: 1.1rem;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #8B4513;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.5);
+            color: #f4f1e8;
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #DAA520;
+            box-shadow: 0 0 15px rgba(218, 165, 32, 0.4);
+            background: rgba(0,0,0,0.7);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.5;
+        }
+        
+        .warning-input {
+            background: rgba(139, 0, 0, 0.2) !important;
+            border-color: #DC143C !important;
+        }
+        
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .agent-card {
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.4), rgba(0, 0, 0, 0.4));
+            border: 2px solid #8B4513;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .agent-card.selected {
+            border-color: #FFD700;
+            background: linear-gradient(135deg, rgba(218, 165, 32, 0.3), rgba(139, 69, 19, 0.4));
+            box-shadow: 0 0 20px rgba(218, 165, 32, 0.3);
+        }
+        
+        .agent-card:hover {
+            border-color: #DAA520;
+            box-shadow: 0 5px 15px rgba(218, 165, 32, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .agent-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .agent-name {
+            font-weight: bold;
+            color: #FFD700;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .agent-desc {
+            font-size: 0.85rem;
+            color: #CCC;
+            line-height: 1.4;
+        }
+        
+        .core-agent-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #FFD700;
+            color: #000;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        
+        .generate-btn {
+            background: linear-gradient(135deg, #FFD700, #DAA520);
+            color: #000;
+            border: 3px solid #B8860B;
+            padding: 18px 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 40px auto;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 5px 20px rgba(218, 165, 32, 0.4);
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(218, 165, 32, 0.6);
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+        }
+        
+        .output-section {
+            background: rgba(0,0,0,0.6);
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 30px;
+            border: 3px solid #8B4513;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .copy-btn, .save-btn {
+            background: linear-gradient(135deg, #8B0000, #DC143C);
+            color: #FFD700;
+            border: 2px solid #8B0000;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover, .save-btn:hover {
+            background: linear-gradient(135deg, #DC143C, #FF0000);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 20, 60, 0.4);
+        }
+        
+        .output-text {
+            background: #0a0a0a;
+            border-radius: 8px;
+            padding: 25px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            border: 2px solid #333;
+            color: #f4f1e8;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+        
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .special-serf {
+            background: rgba(75, 0, 130, 0.2);
+            border: 2px dashed #9370DB;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+        
+        .special-serf-title {
+            color: #9370DB;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .checkbox-group label {
+            cursor: pointer;
+            color: #DAA520;
+        }
+        
+        @media (max-width: 768px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+            
+            .agent-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .generate-btn {
+                padding: 15px 30px;
+                font-size: 1.1rem;
+            }
+        }
+        
+        .help-text {
+            font-size: 0.85rem;
+            color: #AAA;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px #FFD700; }
+            50% { box-shadow: 0 0 20px #FFD700, 0 0 30px #FFA500; }
+            100% { box-shadow: 0 0 5px #FFD700; }
+        }
+        
+        .critical-warning {
+            background: rgba(220, 20, 60, 0.2);
+            border: 2px solid #DC143C;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            animation: glow 3s infinite;
+        }
+        
+        .critical-warning h3 {
+            color: #FF6B6B;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">⚔️ Royal Summons Generator V3</h1>
+            <p class="subtitle">Orchestrate the Complete Court of Nightwing</p>
+            <span class="version-badge">V3.0 - ENHANCED FORMAT</span>
+        </div>
+
+        <!-- Critical Warnings Section -->
+        <div class="critical-warning">
+            <h3>⚠️ CRITICAL REMINDERS</h3>
+            <div class="checkbox-group">
+                <input type="checkbox" id="wslWarning">
+                <label for="wslWarning">I understand: Code runs in WSL but kingdom runs on Windows Desktop</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="breakWarning">
+                <label for="breakWarning">I will NOT BREAK ANYTHING</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="filesWarning">
+                <label for="filesWarning">I will track similarly named files carefully</label>
+            </div>
+        </div>
+
+        <!-- Noble Title Section -->
+        <div class="form-section">
+            <h2 class="section-title">👑 Noble Title & Identity</h2>
+            <div class="row">
+                <div class="form-group">
+                    <label for="nobleRank">Noble Rank</label>
+                    <select id="nobleRank">
+                        <option value="Archduke" selected>Archduke</option>
+                        <option value="Archduchess">Archduchess</option>
+                        <option value="Duke">Duke</option>
+                        <option value="Duchess">Duchess</option>
+                        <option value="Prince">Prince</option>
+                        <option value="Princess">Princess</option>
+                        <option value="Baron">Baron</option>
+                        <option value="Baroness">Baroness</option>
+                        <option value="Marquis">Marquis</option>
+                        <option value="Marquise">Marquise</option>
+                        <option value="Earl">Earl</option>
+                        <option value="Countess">Countess</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="nobleName">Noble Name</label>
+                    <input type="text" id="nobleName" placeholder="Caesar, Marcus, Isabella, etc." value="Caesar">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label for="regnalNumber">Regnal Number</label>
+                    <input type="number" id="regnalNumber" placeholder="1-9999" min="1" max="9999" value="1">
+                    <div class="help-text">Your hereditary succession number (like Henry VIII)</div>
+                </div>
+                <div class="form-group">
+                    <label for="romanNumeral">Roman Numeral</label>
+                    <input type="text" id="romanNumeral" readonly placeholder="Auto-generated" 
+                           style="background: rgba(0,0,0,0.7); cursor: not-allowed;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="nickname">Noble Epithet</label>
+                <input type="text" id="nickname" placeholder='"The RoadBuilder", "Bug Hunter", "Code Slayer"' value="The RoadBuilder">
+            </div>
+        </div>
+
+        <!-- Primary Quest -->
+        <div class="form-section">
+            <h2 class="section-title">⚔️ YOUR QUEST</h2>
+            <div class="form-group">
+                <label for="quest">Primary Quest Description</label>
+                <textarea id="quest" placeholder="Describe the main objective. Be specific about the problem and desired outcome..."></textarea>
+                <div class="help-text">Be clear and detailed. Include context about what's broken and what success looks like.</div>
+            </div>
+            <div class="form-group">
+                <label for="questReminder">Quest Reminder (Brief Summary)</label>
+                <input type="text" id="questReminder" placeholder="One-line summary for quick reference">
+            </div>
+        </div>
+
+        <!-- The Royal Court -->
+        <div class="form-section">
+            <h2 class="section-title">🏰 YOUR ROYAL COURT</h2>
+            <p style="margin-bottom: 20px; color: #DDD;">Select the agents you need for this quest:</p>
+            
+            <div class="agent-grid" id="agentGrid">
+                <div class="agent-card" data-agent="detective">
+                    <span class="core-agent-badge">CORE</span>
+                    <span class="agent-emoji">🔍</span>
+                    <div class="agent-name">DETECTIVE</div>
+                    <div class="agent-desc">Bug investigation & mystery solving</div>
+                </div>
+                <div class="agent-card" data-agent="blacksmith">
+                    <span class="core-agent-badge">CORE</span>
+                    <span class="agent-emoji">🔨</span>
+                    <div class="agent-name">BLACKSMITH</div>
+                    <div class="agent-desc">Implementation & fixes</div>
+                </div>
+                <div class="agent-card" data-agent="burninator">
+                    <span class="agent-emoji">🔥</span>
+                    <div class="agent-name">BURNINATOR</div>
+                    <div class="agent-desc">Code destruction</div>
+                </div>
+                <div class="agent-card" data-agent="archivist">
+                    <span class="core-agent-badge">CORE</span>
+                    <span class="agent-emoji">📚</span>
+                    <div class="agent-name">ARCHIVIST</div>
+                    <div class="agent-desc">Documentation & organization</div>
+                </div>
+                <div class="agent-card" data-agent="armarius">
+                    <span class="core-agent-badge">CORE</span>
+                    <span class="agent-emoji">📖</span>
+                    <div class="agent-name">ARMARIUS</div>
+                    <div class="agent-desc">Git operations & version control</div>
+                </div>
+                <div class="agent-card" data-agent="praegustator">
+                    <span class="agent-emoji">🧪</span>
+                    <div class="agent-name">PRAEGUSTATOR</div>
+                    <div class="agent-desc">Unit Tests and Integration Tests</div>
+                </div>
+                <div class="agent-card" data-agent="kingswit">
+                    <span class="core-agent-badge">CORE</span>
+                    <span class="agent-emoji">👑</span>
+                    <div class="agent-name">KING'S WIT</div>
+                    <div class="agent-desc">Critical analysis & flaw finding</div>
+                </div>
+                <div class="agent-card" data-agent="illuminator">
+                    <span class="agent-emoji">🎨</span>
+                    <div class="agent-name">ILLUMINATOR</div>
+                    <div class="agent-desc">UI/UX & visual design</div>
+                </div>
+            </div>
+            
+            <div class="special-serf">
+                <div class="special-serf-title">SERF - Special Counting Agent</div>
+                <div class="agent-desc">Counts {}[]() - Can be called by ANY agent for validation</div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="includeSerf" checked>
+                    <label for="includeSerf">Include SERF for counting validation</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Critical Context -->
+        <div class="form-section">
+            <h2 class="section-title">📚 REQUIRED READING</h2>
+            <div class="form-group">
+                <label for="requiredReading">Files & Documentation to Review First</label>
+                <textarea id="requiredReading" placeholder="List specific files, docs, or context Claude must read before starting...
+Example:
+- claude.md
+- relevant AIBROWSER MCP RELATED FILES
+- relevant underlying ai-browser files"></textarea>
+                <div class="help-text">Include all relevant files and documentation needed for context</div>
+            </div>
+        </div>
+
+        <!-- Quest Parameters -->
+        <div class="form-section">
+            <h2 class="section-title">🎯 Quest Parameters</h2>
+            
+            <div class="form-group">
+                <label for="suspectedIssues">💡 SUSPECTED ISSUES</label>
+                <textarea id="suspectedIssues" placeholder="What might be wrong? What challenges are expected?"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="successMetrics">📊 SUCCESS METRICS</label>
+                <textarea id="successMetrics" placeholder="How will we know the quest is complete? Be specific.
+Example: CAN SEARCH GOOGLE. NO WEIRD ID MISMATCHES. NO CRAZY REFS."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="warnings" class="warning-label">⚠️ WARNINGS</label>
+                <textarea id="warnings" class="warning-input" placeholder="CRITICAL WARNINGS AND CONSTRAINTS
+Example:
+- Don't BREAK ANYTHING
+- You run in WSL but kingdom runs on desktop
+- We have lots of similarly labeled files"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="testScenarios">🧪 TEST SCENARIOS</label>
+                <textarea id="testScenarios" placeholder="How to verify the solution works?
+Example: USE PRAEGUSTATOR to CREATE Tests immediately after fixing/creating
+Have HUMAN run tests in CMD"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="deliverables">📋 DELIVERABLES</label>
+                <textarea id="deliverables" placeholder="What should be delivered at quest completion?
+Example: Testament filed in emerald filing cabinet."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="philosophy">💭 THE PHILOSOPHY</label>
+                <input type="text" id="philosophy" placeholder='Your guiding principle in quotes...' value='"Is it really a Kingdom without access to Cnn.com?"'>
+                <div class="help-text">A memorable quote that captures the essence of this quest</div>
+            </div>
+        </div>
+
+        <!-- Final Instructions -->
+        <div class="form-section">
+            <h2 class="section-title">📜 FINAL INSTRUCTIONS</h2>
+            <div class="form-group">
+                <label for="finalInstructions">Closing Directive</label>
+                <textarea id="finalInstructions" placeholder="Final instructions before the quest begins...">INVESTIGATE FIRST. DO NOT LET ANY UNDERLINGS TOUCH ANYTHING UNTIL YOU HAVE REPORTED BACK WITH ASSESSMENT OF ISSUE AND PROPOSED SOLUTION OR PLAN TO MOVE FORWARD.</textarea>
+            </div>
+        </div>
+
+        <button class="generate-btn" onclick="generateSummons()">
+            ⚔️ GENERATE ROYAL SUMMONS
+        </button>
+
+        <div class="output-section" id="outputSection" style="display: none;">
+            <div class="output-header">
+                <h3 style="color: #FFD700; font-size: 1.5rem;">📜 Your Royal Summons</h3>
+                <div>
+                    <button class="save-btn" onclick="downloadSummons()">💾 Save as .txt</button>
+                    <button class="copy-btn" onclick="copySummons()">📋 Copy to Clipboard</button>
+                </div>
+            </div>
+            <div class="output-text" id="summonsOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize selected agents
+        let selectedAgents = new Set(['detective', 'blacksmith', 'archivist', 'armarius', 'kingswit']);
+        
+        // Agent data
+        const agentData = {
+            detective: { emoji: '🔍', name: 'DETECTIVE', desc: 'Bug investigation & mystery solving' },
+            blacksmith: { emoji: '🔨', name: 'BLACKSMITH', desc: 'Implementation & fixes' },
+            burninator: { emoji: '🔥', name: 'BURNINATOR', desc: 'Code destruction' },
+            archivist: { emoji: '📚', name: 'ARCHIVIST', desc: 'Documentation & organization' },
+            armarius: { emoji: '📖', name: 'ARMARIUS', desc: 'Git operations & version control' },
+            praegustator: { emoji: '🧪', name: 'PRAEGUSTATOR', desc: 'Unit Tests and Integration Tests' },
+            kingswit: { emoji: '👑', name: "KING'S WIT", desc: 'Critical analysis & flaw finding' },
+            illuminator: { emoji: '🎨', name: 'ILLUMINATOR', desc: 'UI/UX & visual design' }
+        };
+        
+        // Toggle agent selection
+        document.querySelectorAll('.agent-card').forEach(card => {
+            const agent = card.dataset.agent;
+            if (selectedAgents.has(agent)) {
+                card.classList.add('selected');
+            }
+            
+            card.addEventListener('click', () => {
+                const agent = card.dataset.agent;
+                if (selectedAgents.has(agent)) {
+                    selectedAgents.delete(agent);
+                    card.classList.remove('selected');
+                } else {
+                    selectedAgents.add(agent);
+                    card.classList.add('selected');
+                }
+                saveFormData();
+            });
+        });
+        
+        function getFormData() {
+            return {
+                nobleRank: document.getElementById('nobleRank').value,
+                nobleName: document.getElementById('nobleName').value,
+                regnalNumber: document.getElementById('regnalNumber').value,
+                romanNumeral: document.getElementById('romanNumeral').value,
+                nickname: document.getElementById('nickname').value,
+                quest: document.getElementById('quest').value,
+                questReminder: document.getElementById('questReminder').value,
+                requiredReading: document.getElementById('requiredReading').value,
+                suspectedIssues: document.getElementById('suspectedIssues').value,
+                successMetrics: document.getElementById('successMetrics').value,
+                warnings: document.getElementById('warnings').value,
+                testScenarios: document.getElementById('testScenarios').value,
+                deliverables: document.getElementById('deliverables').value,
+                philosophy: document.getElementById('philosophy').value,
+                finalInstructions: document.getElementById('finalInstructions').value,
+                includeSerf: document.getElementById('includeSerf').checked,
+                selectedAgents: Array.from(selectedAgents),
+                wslWarning: document.getElementById('wslWarning').checked,
+                breakWarning: document.getElementById('breakWarning').checked,
+                filesWarning: document.getElementById('filesWarning').checked
+            };
+        }
+
+        function numberToRoman(num) {
+            const values = [
+                [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
+                [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
+                [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']
+            ];
+            
+            let roman = '';
+            for (let [value, numeral] of values) {
+                while (num >= value) {
+                    roman += numeral;
+                    num -= value;
+                }
+            }
+            return roman;
+        }
+
+        function updateRomanNumeral() {
+            const regnalNumber = parseInt(document.getElementById('regnalNumber').value) || 1;
+            const romanNumeral = numberToRoman(regnalNumber);
+            document.getElementById('romanNumeral').value = romanNumeral;
+        }
+
+        function generateSummons() {
+            const data = getFormData();
+            
+            // Check warnings
+            if (!data.wslWarning || !data.breakWarning || !data.filesWarning) {
+                alert('Please acknowledge all critical warnings before generating summons!');
+                return;
+            }
+            
+            // Build agent list
+            let agentList = '';
+            selectedAgents.forEach(agent => {
+                const agentInfo = agentData[agent];
+                agentList += `- ${agentInfo.emoji} ${agentInfo.name} - ${agentInfo.desc}\n`;
+            });
+            
+            if (data.includeSerf) {
+                agentList += `- SERF - Counts {}[]()\n`;
+            }
+            
+            // Build warnings section
+            let warningsSection = '';
+            if (data.warnings) {
+                const warningLines = data.warnings.split('\n').filter(line => line.trim());
+                warningsSection = warningLines.map(line => `  - ${line.trim()}`).join('\n');
+            }
+            
+            const summons = `ROYAL SUMMONS: ${data.nobleRank} ${data.nobleName} ${data.romanNumeral} needed!
+
+YOUR NOBLE TITLE: ${data.nobleRank} ${data.nobleName} ${data.romanNumeral} "${data.nickname}"
+## ⚠️ WARNINGS
+${warningsSection || 'Don\'t BREAK ANYTHING.\nYou run in wsl but the kingdom runs on desktop. Don\'t get confused.\nWe have lots of similarly labeled files. Keep track of where you are.'}
+
+YOUR QUEST: 
+  ${data.quest}
+
+YOUR COURT: You command these specialized agents:
+${agentList}
+YOUR DUTIES AS ORCHESTRATOR:
+1. ANALYZE the user's request and determine which agents to summon
+2. SUMMON agents with SPECIFIC, BOUNDED task
+3. VERIFY agent work - CHECK THEIR MATH AND CLAIMS
+4. REPORT BACK each agent's findings EXPLICITLY:
+   - "${selectedAgents.has('detective') ? 'DETECTIVE' : 'AGENT'} reports: [exact findings]"
+   - "${selectedAgents.has('detective') ? 'DETECTIVE' : 'AGENT'}'s count: X files in Y locations"
+   - "Discrepancy noted: ${selectedAgents.has('detective') ? 'DETECTIVE' : 'AGENT'} said X but ${selectedAgents.has('blacksmith') ? 'BLACKSMITH' : 'AGENT'} claims Y"
+5. AWARD creative medals for good work
+6. COORDINATE work (${data.includeSerf ? 'EVERY AGENT CAN CALL SERF to validate, otherwise YOU call agents sequentially' : 'YOU call agents sequentially'})
+7. WRITE master testament combining all work
+
+CRITICAL ORCHESTRATION RULES:
+- ⚠️ ALWAYS report exact numbers from each agent
+- ⚠️ ALWAYS verify counts match between agents
+- ⚠️ ALWAYS question discrepancies before proceeding
+- ⚠️ ALWAYS summarize what each agent accomplished
+- ⚠️ NEVER let agents call another agent${data.includeSerf ? ' except SERF' : ''}
+- ⚠️ NEVER assume work is correct without verification${selectedAgents.has('kingswit') ? ' CALL KINGSWIT for HARSH 2nd OPINION but ALWAYS FORM YOUR OWN AS WELL' : ''} 
+
+YOUR REPORTING FORMAT:
+After each agent returns, you MUST report:
+"[AGENT] REPORTS: [Exact summary of their findings]
+ VERIFICATION: [Any issues or confirmations]
+ PROCEEDING TO: [Next step]"
+
+END OF SESSION REQUIREMENTS:
+1. Summon ARMARIUS for git operations (if code changed)
+2. Summon ARCHIVIST to file testaments
+3. Write master testament with complete summary
+4. Report total metrics and success rate
+
+REMEMBER: You are the conductor of this orchestra. Every note must be verified!
+\`\`\`
+
+---
+
+## 📚 YOUR REQUIRED READING
+${data.requiredReading || 'claude.md\nrelevant project files\nconsider using DETECTIVE to create a reading list'}
+
+## 🎯 YOUR QUESTS REMINDER
+  ${data.questReminder || data.quest}
+
+## 💡 SUSPECTED ISSUES
+${data.suspectedIssues || ''}
+
+## 📊 SUCCESS METRICS
+${data.successMetrics || ''}
+
+## ⚠️ WARNINGS
+${warningsSection || 'Don\'t BREAK ANYTHING.\nYou run in wsl but the kingdom runs on desktop. Don\'t get confused.\nWe have lots of similarly labeled files. Keep track of where you are.'}
+
+## 🧪 TEST SCENARIOS
+${data.testScenarios || 'USE PRAEGUSTATOR to CREATE Tests immediately after fixing/creating\nHave HUMAN run tests in CMD'}
+
+## 📋 DELIVERABLES
+${data.deliverables || 'Testament filed in emerald filing cabinet.'}
+
+## 💭 THE PHILOSOPHY
+*"${data.philosophy || 'Is it really a Kingdom without access to Cnn.com?'}"*
+
+---
+
+**GO FORTH, NOBLE ${data.nobleRank.toUpperCase()}!**
+${data.finalInstructions || 'INVESTIGATE FIRST. DO NOT LET ANY UNDERLINGS TOUCH ANYTHING UNTIL YOU HAVE REPORTED BACK WITH ASSESSMENT OF ISSUE AND PROPOSED SOLUTION OR PLAN TO MOVE FORWARD.'}`;
+
+            document.getElementById('summonsOutput').textContent = summons;
+            document.getElementById('outputSection').style.display = 'block';
+            document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copySummons() {
+            const summonsText = document.getElementById('summonsOutput').textContent;
+            navigator.clipboard.writeText(summonsText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Copied!';
+                btn.style.background = 'linear-gradient(135deg, #228B22, #32CD32)';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = 'linear-gradient(135deg, #8B0000, #DC143C)';
+                }, 2000);
+            });
+        }
+        
+        function downloadSummons() {
+            const summonsText = document.getElementById('summonsOutput').textContent;
+            const data = getFormData();
+            const filename = `SUMMONS_${data.nobleName}_${data.romanNumeral}_${new Date().getTime()}.txt`;
+            
+            const blob = new Blob([summonsText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            // Visual feedback
+            const btn = document.querySelector('.save-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ Saved!';
+            btn.style.background = 'linear-gradient(135deg, #228B22, #32CD32)';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = 'linear-gradient(135deg, #8B0000, #DC143C)';
+            }, 2000);
+        }
+
+        // Auto-save to localStorage
+        function saveFormData() {
+            const data = getFormData();
+            localStorage.setItem('royalSummonsV3', JSON.stringify(data));
+        }
+
+        function loadFormData() {
+            const saved = localStorage.getItem('royalSummonsV3');
+            if (saved) {
+                const data = JSON.parse(saved);
+                
+                // Load form fields
+                Object.keys(data).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element && key !== 'romanNumeral' && key !== 'selectedAgents') {
+                        if (element.type === 'checkbox') {
+                            element.checked = data[key];
+                        } else {
+                            element.value = data[key] || '';
+                        }
+                    }
+                });
+                
+                // Load selected agents
+                if (data.selectedAgents) {
+                    selectedAgents = new Set(data.selectedAgents);
+                    document.querySelectorAll('.agent-card').forEach(card => {
+                        const agent = card.dataset.agent;
+                        if (selectedAgents.has(agent)) {
+                            card.classList.add('selected');
+                        } else {
+                            card.classList.remove('selected');
+                        }
+                    });
+                }
+                
+                // Update roman numeral
+                updateRomanNumeral();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFormData();
+            
+            // Add regnal number change listener
+            document.getElementById('regnalNumber').addEventListener('input', () => {
+                updateRomanNumeral();
+                saveFormData();
+            });
+            
+            // Add save listeners to all inputs
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.id !== 'regnalNumber') {
+                    input.addEventListener('input', saveFormData);
+                }
+            });
+            
+            // Initialize roman numeral
+            updateRomanNumeral();
+        });
+    </script>
+</body>
+</html>
