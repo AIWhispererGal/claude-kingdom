@@ -42,4 +42,32 @@ assert(events.some(e => e.kind === 'turn-done' && e.ok === true && e.cost === 0.
 ({ events } = feed([{ random: 'noise' }]));
 assert(events.length === 0, 'unknown object yields no events');
 
-done();
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const FAKE = path.join(__dirname, 'fake-claude.js');
+
+// Regent runs the fake claude end-to-end, emits normalized events, persists session id
+(async () => {
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), 'regent-'));
+  const sessionFile = path.join(proj, 'regent.json');
+  const reg = new R.Regent({ projectRoot: proj, sessionFile, command: 'node', baseArgs: [FAKE] });
+  const got = [];
+  const res = await reg.say('hello', (ev) => got.push(ev));
+  assert(res.ok === true, 'say resolves ok');
+  assert(got.some(e => e.kind === 'archduke-text' && /detective/.test(e.text)), 'streamed archduke text');
+  assert(got.some(e => e.kind === 'subagent-dispatch' && e.name === 'detective-greymantle'), 'streamed dispatch');
+  assert(got.some(e => e.kind === 'subagent-return' && e.name === 'detective-greymantle'), 'streamed return');
+  assert(got.some(e => e.kind === 'turn-done'), 'streamed turn-done');
+  assert(JSON.parse(fs.readFileSync(sessionFile, 'utf8')).session_id === 'fake-sess-42', 'session id persisted');
+  assert(reg.sessionId === 'fake-sess-42', 'regent remembers session id');
+
+  // missing binary -> error event, no throw
+  const reg2 = new R.Regent({ projectRoot: proj, sessionFile, command: 'definitely-not-a-real-binary-xyz', baseArgs: [] });
+  const got2 = [];
+  await reg2.say('x', (ev) => got2.push(ev));
+  assert(got2.some(e => e.kind === 'error'), 'missing binary yields an error event');
+
+  fs.rmSync(proj, { recursive: true, force: true });
+  done();
+})();

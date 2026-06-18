@@ -75,4 +75,75 @@ function normalizeStreamObj(obj, state) {
   return { events, state };
 }
 
-module.exports = { initialState, normalizeStreamObj, extractText, summarizeInput };
+class Regent {
+  constructor({ projectRoot, sessionFile, command = 'claude', baseArgs = [] }) {
+    this.projectRoot = projectRoot;
+    this.sessionFile = sessionFile;
+    this.command = command;
+    this.baseArgs = baseArgs;
+    this.child = null;
+    this.sessionId = this._loadSession();
+  }
+  get busy() { return this.child != null; }
+  _loadSession() {
+    try { return JSON.parse(fs.readFileSync(this.sessionFile, 'utf8')).session_id || null; } catch { return null; }
+  }
+  _saveSession(id) {
+    try {
+      fs.mkdirSync(path.dirname(this.sessionFile), { recursive: true });
+      fs.writeFileSync(this.sessionFile, JSON.stringify({ session_id: id, updated_at: new Date().toISOString() }, null, 2) + '\n');
+    } catch { /* non-fatal */ }
+  }
+  say(text, onEvent) {
+    if (this.busy) return Promise.resolve({ ok: false, busy: true });
+    const args = [...this.baseArgs, '-p', text, '--output-format', 'stream-json', '--verbose', '--permission-mode', 'acceptEdits'];
+    if (this.sessionId) args.push('--resume', this.sessionId);
+    let state = initialState();
+    return new Promise((resolve) => {
+      let resolved = false;
+      const settle = (val) => { if (!resolved) { resolved = true; resolve(val); } };
+      let child;
+      try {
+        child = spawn(this.command, args, { cwd: this.projectRoot });
+      } catch (e) {
+        onEvent({ kind: 'error', message: `Failed to start Claude Code: ${e.message}` });
+        return settle({ ok: false, error: e.message });
+      }
+      this.child = child;
+      let buf = '';
+      const handleLine = (line) => {
+        const t = line.trim();
+        if (!t) return;
+        let obj;
+        try { obj = JSON.parse(t); } catch { if (process.env.KINGDOM_REGENT_DEBUG) console.error('REGENT raw:', t); return; }
+        const r = normalizeStreamObj(obj, state);
+        state = r.state;
+        for (const ev of r.events) {
+          if (ev.kind === 'session') this._saveSession((this.sessionId = ev.sessionId));
+          onEvent(ev);
+        }
+      };
+      child.stdout.on('data', (d) => {
+        buf += d.toString();
+        let i;
+        while ((i = buf.indexOf('\n')) >= 0) { handleLine(buf.slice(0, i)); buf = buf.slice(i + 1); }
+      });
+      child.stderr.on('data', (d) => { if (process.env.KINGDOM_REGENT_DEBUG) console.error('REGENT stderr:', d.toString()); });
+      child.on('error', (e) => {
+        onEvent({ kind: 'error', message: `Claude Code could not be launched: ${e.message}. Is the \`claude\` CLI installed and on PATH?` });
+        settle({ ok: false, error: e.message });
+      });
+      child.on('close', (code) => {
+        if (buf.trim()) handleLine(buf);
+        this.child = null;
+        settle({ ok: code === 0, code, sessionId: this.sessionId });
+      });
+    });
+  }
+  stop() {
+    if (this.child) { try { this.child.kill('SIGTERM'); } catch {} this.child = null; return true; }
+    return false;
+  }
+}
+
+module.exports = { initialState, normalizeStreamObj, extractText, summarizeInput, Regent };
