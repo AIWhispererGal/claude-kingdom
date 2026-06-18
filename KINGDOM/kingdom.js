@@ -86,7 +86,9 @@ function banner() {
 }
 
 function cmdHelp() {
+  const { KINGDOM_VERSION } = require('./agents/agent_gen.js');
   console.log(banner());
+  console.log(dim(`  House ClaudeCode — Kingdom v${KINGDOM_VERSION}`));
   console.log('');
   console.log(bold('  Steward of the realm. Summon courts, read the chronicle, keep the honors.'));
   console.log('');
@@ -101,6 +103,8 @@ function cmdHelp() {
     ['new-role NAME', 'Scaffold a new agent ROLE'],
     ['new-family ROLE NAME', 'Found a new FAMILY lineage under a role'],
     ['extinct ROLE FAMILY [--reason T]', 'Declare a family extinct (skills archived)'],
+    ['init [dir] [--reinstall]', 'Install a self-contained Kingdom into a project'],
+    ['sync-agents', "Regenerate a project's court after roster changes"],
     ['help', 'Show this banner'],
   ];
   for (const [cmd, desc] of rows) {
