@@ -23,6 +23,15 @@ const G = require('./summons/generator.js'); // reuse the real engine + PATHS
 
 const ROOT = G.KINGDOM_ROOT;                 // .../KINGDOM
 const KINGDOM_JS = path.join(ROOT, 'kingdom.js');
+const { Regent } = require('./regent.js');
+// The project root is the directory containing this Kingdom (parent of .kingdom/, or of KINGDOM/ in dev).
+const PROJECT_ROOT = path.dirname(ROOT);
+const regent = new Regent({
+  projectRoot: PROJECT_ROOT,
+  sessionFile: path.join(ROOT, 'regent.json'),
+  command: process.env.KINGDOM_CLAUDE_CMD || 'claude',
+  baseArgs: process.env.KINGDOM_CLAUDE_BASEARGS ? JSON.parse(process.env.KINGDOM_CLAUDE_BASEARGS) : [],
+});
 const APP_HTML = path.join(ROOT, 'web', 'app.html');
 const PORT = parseInt(process.env.PORT, 10) || 8080;
 const stripAnsi = (s) => String(s).replace(/\x1b\[[0-9;]*m/g, '');
@@ -123,6 +132,22 @@ const ROLE_EMOJI = (() => {
   if (reg && Array.isArray(reg.roles)) for (const r of reg.roles) m[r.name.toUpperCase()] = r.emoji || '•';
   return m;
 })();
+
+// Map a normalized Regent event onto the SSE feed.
+function archdukeEmit(ev) {
+  if (ev.kind === 'archduke-text') return emit({ icon: '👑', kind: 'archduke-text', title: ev.text, detail: '' });
+  if (ev.kind === 'subagent-dispatch') {
+    const role = String(ev.name).split('-')[0].toUpperCase();
+    return emit({ icon: ROLE_EMOJI[role] || '•', kind: 'subagent-dispatch', title: `${ev.name} dispatched`, detail: ev.task || '' });
+  }
+  if (ev.kind === 'subagent-return') {
+    const role = String(ev.name).split('-')[0].toUpperCase();
+    return emit({ icon: ROLE_EMOJI[role] || '•', kind: 'subagent-return', title: `${ev.name} returned`, detail: ev.summary || '' });
+  }
+  if (ev.kind === 'tool-use') return emit({ icon: '🛠️', kind: 'tool-use', title: ev.tool, detail: ev.summary || '' });
+  if (ev.kind === 'turn-done') return emit({ icon: '✅', kind: 'turn-done', title: 'The Archduke rests', detail: ev.cost != null ? `cost $${ev.cost}` : '' });
+  if (ev.kind === 'error') return emit({ icon: '⚠️', kind: 'archduke-error', title: 'The Archduke faltered', detail: ev.message || '' });
+}
 
 async function apiSummon(body) {
   const quest = {
@@ -296,6 +321,34 @@ const server = http.createServer(async (req, res) => {
     } catch (e) {
       return sendJSON(res, 400, { ok: false, error: e.message });
     }
+  }
+
+  if (urlPath === '/api/archduke/status' && req.method === 'GET') {
+    return sendJSON(res, 200, { busy: regent.busy, sessionId: regent.sessionId });
+  }
+  if (urlPath === '/api/archduke/say' && req.method === 'POST') {
+    try {
+      const body = await readBody(req);
+      const text = (body && body.text ? String(body.text) : '').trim().slice(0, 8000);
+      if (!text) return sendJSON(res, 400, { ok: false, error: 'empty message' });
+      if (regent.busy) return sendJSON(res, 409, { ok: false, busy: true });
+      emit({ icon: '🗣️', kind: 'archduke-say', title: 'You address the Archduke', detail: text });
+      regent.say(text, archdukeEmit); // fire-and-forget; events stream over SSE
+      return sendJSON(res, 200, { ok: true, started: true });
+    } catch (e) {
+      return sendJSON(res, 400, { ok: false, error: e.message });
+    }
+  }
+  if (urlPath === '/api/archduke/stop' && req.method === 'POST') {
+    const stopped = regent.stop();
+    if (stopped) emit({ icon: '✋', kind: 'turn-done', title: 'The Archduke was halted', detail: '' });
+    return sendJSON(res, 200, { ok: true, stopped });
+  }
+  if (urlPath === '/api/archduke/reset' && req.method === 'POST') {
+    regent.stop(); // halt any in-flight turn so it cannot re-save the session
+    try { fs.unlinkSync(path.join(ROOT, 'regent.json')); } catch {}
+    regent.sessionId = null;
+    return sendJSON(res, 200, { ok: true });
   }
 
   if (req.method === 'GET') return serveStatic(req, res, urlPath);

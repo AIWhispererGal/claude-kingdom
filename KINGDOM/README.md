@@ -74,6 +74,18 @@ After founding or retiring families, run `node .kingdom/kingdom.js sync-agents` 
 refresh the court. `node .kingdom/kingdom.js init <dir> --reinstall` upgrades the Kingdom's code while
 **preserving** that project's accumulated history and honors.
 
+## Talk to the Archduke (live web)
+
+Inside an init'd project:
+```bash
+node .kingdom/kingdom-server.js     # http://localhost:8080
+```
+Open the **Throne Room** tab and address the Archduke in plain language. The server runs a real
+headless Claude Code in your project (reusing your existing login — **no API key**), streams its reply
+into the chat lane, and lights up the **live feed** as it dispatches court subagents
+(`🔍 detective-greymantle dispatched → returned`). One turn at a time; **Stop ✋** halts it; **🆕**
+starts a fresh session. Requires the `claude` CLI on your PATH.
+
 ## Map of the realm
 
 | Path | What lives here |
