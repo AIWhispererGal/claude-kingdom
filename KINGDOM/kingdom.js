@@ -904,6 +904,28 @@ function mergeSettingsAllow(file, entries, note) {
 }
 
 // ---------------------------------------------------------------------------
+// refreshCourt — shared helper used by both init and sync-agents
+// ---------------------------------------------------------------------------
+
+// Regenerate a project's court subagents + managed CLAUDE.md block + settings.allow,
+// reading from the project's OWN copied .kingdom (so it reflects that project's roster).
+// Returns { genResult, AGt, court }.
+function refreshCourt(projectRoot, dotK, AGt) {
+  AGt = AGt || require(path.join(dotK, 'agents', 'agent_gen.js'));
+  const agentsDir = path.join(projectRoot, '.claude', 'agents');
+  const genResult = AGt.generateAllSubagents(agentsDir, { prune: true });
+  const reg = JSON.parse(fs.readFileSync(path.join(dotK, 'agents', 'REGISTRY.json'), 'utf8'));
+  const court = AGt.listActiveFamilies(reg).map((a) => `${a.role.toLowerCase()}-${a.family.toLowerCase()}`);
+  writeManagedBlock(path.join(projectRoot, 'CLAUDE.md'), AGt.MARKERS.start, AGt.MARKERS.end, AGt.claudeBlock(court));
+  mergeSettingsAllow(
+    path.join(projectRoot, '.claude', 'settings.json'),
+    AGt.settingsAllowEntries(court),
+    'Managed by the Living Kingdom. Broaden permissions here as you trust the realm.'
+  );
+  return { genResult, AGt, court };
+}
+
+// ---------------------------------------------------------------------------
 // init
 // ---------------------------------------------------------------------------
 function cmdInit(args) {
@@ -957,22 +979,31 @@ function cmdInit(args) {
     }, null, 2) + '\n');
   }
 
-  const agentsDir = path.join(target, '.claude', 'agents');
-  const genResult = AGt.generateAllSubagents(agentsDir, { prune: true });
-  const reg = JSON.parse(fs.readFileSync(path.join(dotK, 'agents', 'REGISTRY.json'), 'utf8'));
-  const court = AGt.listActiveFamilies(reg).map((a) => `${a.role.toLowerCase()}-${a.family.toLowerCase()}`);
-
-  writeManagedBlock(path.join(target, 'CLAUDE.md'), AGt.MARKERS.start, AGt.MARKERS.end, AGt.claudeBlock(court));
-  mergeSettingsAllow(
-    path.join(target, '.claude', 'settings.json'),
-    AGt.settingsAllowEntries(court),
-    'Managed by the Living Kingdom. Broaden permissions here as you trust the realm.'
-  );
+  // AGt already required above for PROJECT.json's version
+  const { genResult } = refreshCourt(target, dotK, AGt);
 
   console.log(`🏰 Kingdom ${reinstall ? 're-installed' : 'installed'} in ${target}`);
   console.log(`   ${genResult.written.length} court subagents in .claude/agents/${genResult.removed.length ? ` (${genResult.removed.length} pruned)` : ''}`);
   console.log('   CLAUDE.md managed block + .claude/settings.json updated; .kingdom/PROJECT.json bound.');
   console.log('   Next: `node .kingdom/kingdom-server.js` for the web, or open Claude Code here and summon a court.');
+}
+
+// ---------------------------------------------------------------------------
+// sync-agents
+// ---------------------------------------------------------------------------
+function cmdSyncAgents() {
+  const root = gen.KINGDOM_ROOT;
+  let dotK, projectRoot;
+  if (path.basename(root) === '.kingdom') {
+    dotK = root; projectRoot = path.dirname(root);
+  } else if (fs.existsSync(path.join(process.cwd(), '.kingdom'))) {
+    projectRoot = process.cwd(); dotK = path.join(projectRoot, '.kingdom');
+  } else {
+    console.error("⚠ sync-agents must run inside an init'd project (where a .kingdom/ exists). Try: node .kingdom/kingdom.js sync-agents");
+    process.exitCode = 1; return;
+  }
+  const { genResult } = refreshCourt(projectRoot, dotK);
+  console.log(`🔄 Court synced: ${genResult.written.length} active${genResult.removed.length ? `, ${genResult.removed.length} removed` : ''}.`);
 }
 
 // ---------------------------------------------------------------------------
@@ -996,6 +1027,7 @@ async function main() {
       case 'new-family': cmdNewFamily(rest); break;
       case 'extinct': cmdExtinct(rest); break;
       case 'init': cmdInit(rest); break;
+      case 'sync-agents': cmdSyncAgents(); break;
       case 'help':
       case '--help':
       case '-h':

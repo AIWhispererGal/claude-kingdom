@@ -44,7 +44,12 @@ fs.rmSync(dst, { recursive: true, force: true });
 const { execFileSync } = require('child_process');
 const KJS = path.join(__dirname, '..', 'kingdom.js');
 function run(args, cwd) {
-  return execFileSync('node', [KJS, ...args], { cwd: cwd || process.cwd(), encoding: 'utf8' });
+  // When cwd is a .kingdom dir, run that kingdom's own CLI so commands mutate its local data.
+  const eff = cwd || process.cwd();
+  const kjs = (path.basename(eff) === '.kingdom' && fs.existsSync(path.join(eff, 'kingdom.js')))
+    ? path.join(eff, 'kingdom.js')
+    : KJS;
+  return execFileSync('node', [kjs, ...args], { cwd: eff, encoding: 'utf8' });
 }
 
 // fresh init into a temp project
@@ -78,4 +83,18 @@ const after = JSON.parse(fs.readFileSync(sess, 'utf8'));
 assert(after.__sentinel === 'KEEP_ME', '--reinstall preserves evolved memory');
 
 fs.rmSync(proj, { recursive: true, force: true });
+
+// sync-agents picks up new-family and extinct
+const proj2 = fs.mkdtempSync(path.join(os.tmpdir(), 'kproj2-'));
+run(['init', proj2]);
+// found a new family in the project's Kingdom, then sync
+run(['new-family', 'burninator', 'EMBERWRIGHT'], path.join(proj2, '.kingdom'));
+run(['sync-agents'], proj2);
+assert(fs.existsSync(path.join(proj2, '.claude', 'agents', 'burninator-emberwright.md')), 'sync adds new family agent');
+// declare it extinct, then sync removes the agent
+run(['extinct', 'burninator', 'EMBERWRIGHT', '--reason', 'test'], path.join(proj2, '.kingdom'));
+run(['sync-agents'], proj2);
+assert(!fs.existsSync(path.join(proj2, '.claude', 'agents', 'burninator-emberwright.md')), 'sync removes extinct family agent');
+fs.rmSync(proj2, { recursive: true, force: true });
+
 done();
