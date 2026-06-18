@@ -24,7 +24,8 @@ const G = require('./summons/generator.js'); // reuse the real engine + PATHS
 const ROOT = G.KINGDOM_ROOT;                 // .../KINGDOM
 const KINGDOM_JS = path.join(ROOT, 'kingdom.js');
 const { Regent } = require('./regent.js');
-const PROJECT_ROOT = path.basename(ROOT) === '.kingdom' ? path.dirname(ROOT) : path.dirname(ROOT);
+// The project root is the directory containing this Kingdom (parent of .kingdom/, or of KINGDOM/ in dev).
+const PROJECT_ROOT = path.dirname(ROOT);
 const regent = new Regent({
   projectRoot: PROJECT_ROOT,
   sessionFile: path.join(ROOT, 'regent.json'),
@@ -326,13 +327,17 @@ const server = http.createServer(async (req, res) => {
     return sendJSON(res, 200, { busy: regent.busy, sessionId: regent.sessionId });
   }
   if (urlPath === '/api/archduke/say' && req.method === 'POST') {
-    const body = await readBody(req);
-    const text = (body && body.text ? String(body.text) : '').trim();
-    if (!text) return sendJSON(res, 400, { ok: false, error: 'empty message' });
-    if (regent.busy) return sendJSON(res, 409, { ok: false, busy: true });
-    emit({ icon: '🗣️', kind: 'archduke-say', title: 'You address the Archduke', detail: text });
-    regent.say(text, archdukeEmit); // fire-and-forget; events stream over SSE
-    return sendJSON(res, 200, { ok: true, started: true });
+    try {
+      const body = await readBody(req);
+      const text = (body && body.text ? String(body.text) : '').trim().slice(0, 8000);
+      if (!text) return sendJSON(res, 400, { ok: false, error: 'empty message' });
+      if (regent.busy) return sendJSON(res, 409, { ok: false, busy: true });
+      emit({ icon: '🗣️', kind: 'archduke-say', title: 'You address the Archduke', detail: text });
+      regent.say(text, archdukeEmit); // fire-and-forget; events stream over SSE
+      return sendJSON(res, 200, { ok: true, started: true });
+    } catch (e) {
+      return sendJSON(res, 400, { ok: false, error: e.message });
+    }
   }
   if (urlPath === '/api/archduke/stop' && req.method === 'POST') {
     const stopped = regent.stop();
@@ -340,6 +345,7 @@ const server = http.createServer(async (req, res) => {
     return sendJSON(res, 200, { ok: true, stopped });
   }
   if (urlPath === '/api/archduke/reset' && req.method === 'POST') {
+    regent.stop(); // halt any in-flight turn so it cannot re-save the session
     try { fs.unlinkSync(path.join(ROOT, 'regent.json')); } catch {}
     regent.sessionId = null;
     return sendJSON(res, 200, { ok: true });

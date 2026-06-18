@@ -41,6 +41,15 @@ function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
   assert(/archduke-text/.test(all), 'SSE carried archduke-text');
   assert(/subagent-dispatch/.test(all), 'SSE carried subagent-dispatch');
 
+  // empty text is rejected (regent is idle again — the fake turn finished above)
+  const empty = await post('/api/archduke/say', { text: '   ' });
+  assert(empty.status === 400, 'empty text rejected with 400');
+
+  // reset clears the persisted session id
+  await post('/api/archduke/reset', {});
+  const afterReset = await get('/api/archduke/status');
+  assert(/"sessionId":null/.test(afterReset.body), 'reset clears session id');
+
   sse.destroy();
   srv.kill('SIGTERM');
   await sleep(150);
