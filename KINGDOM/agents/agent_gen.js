@@ -56,7 +56,7 @@ function buildSubagent(roleName, familyName) {
     ? skills.map((s) => `- ${s.name}${s.problem ? ` — ${s.problem}` : ''}`).join('\n')
     : '- (no recorded skills yet)';
 
-  const description = `${tagline} The ${family} line: ${philosophy} Dispatch for ${role}-type work.`
+  const description = `${tagline} The ${family} line (${philosophy}) — use for ${role}-type work.`
     .replace(/\s+/g, ' ').trim();
 
   const contents = `---
@@ -80,6 +80,8 @@ I, ${name}, of the ${family} line, accept this task upon my honor.
 MY CHARGE: the specific, bounded task my orchestrator assigns.
 MY LIMITS: I will not exceed my role; my tools are restricted to enforce it.
 MY VOW: I will report true findings, true counts only. ${emoji} SEAL: ⚜
+
+Report in the ${role} reporting format. Respect your hard limits — your tools are restricted to enforce them.
 `;
 
   return { filename: `${name}.md`, name, contents };

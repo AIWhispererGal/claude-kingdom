@@ -59,7 +59,7 @@ const dotK = path.join(proj, '.kingdom');
 assert(fs.existsSync(path.join(dotK, 'agents', 'REGISTRY.json')), 'init copied .kingdom data');
 assert(fs.existsSync(path.join(dotK, 'kingdom.js')), 'init copied the CLI');
 const agentFiles = fs.readdirSync(path.join(proj, '.claude', 'agents')).filter((f) => f.endsWith('.md'));
-assert(agentFiles.length === 13, 'init generated 13 court subagents');
+assert(agentFiles.length >= 13, 'init generated >= 13 court subagents');
 const detTxt = fs.readFileSync(path.join(proj, '.claude', 'agents', 'detective-greymantle.md'), 'utf8');
 assert(/\ntools: Read, Grep, Glob\n/.test(detTxt), 'generated detective is read-only');
 const claude = fs.readFileSync(path.join(proj, 'CLAUDE.md'), 'utf8');

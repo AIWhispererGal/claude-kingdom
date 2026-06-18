@@ -918,7 +918,10 @@ function refreshCourt(projectRoot, dotK, AGt) {
   AGt = AGt || require(path.join(dotK, 'agents', 'agent_gen.js'));
   const agentsDir = path.join(projectRoot, '.claude', 'agents');
   const genResult = AGt.generateAllSubagents(agentsDir, { prune: true });
-  const reg = JSON.parse(fs.readFileSync(path.join(dotK, 'agents', 'REGISTRY.json'), 'utf8'));
+  const reg = readJSON(path.join(dotK, 'agents', 'REGISTRY.json'));
+  if (reg.__missing || reg.__error) {
+    throw new Error(`Project REGISTRY.json is missing or malformed${reg.__error ? ': ' + reg.__error : ''}`);
+  }
   const court = AGt.listActiveFamilies(reg).map((a) => `${a.role.toLowerCase()}-${a.family.toLowerCase()}`);
   writeManagedBlock(path.join(projectRoot, 'CLAUDE.md'), AGt.MARKERS.start, AGt.MARKERS.end, AGt.claudeBlock(court));
   mergeSettingsAllow(
