@@ -983,6 +983,7 @@ function cmdInit(args) {
       initialized_at: new Date().toISOString(),
       kingdom_version: AGt.KINGDOM_VERSION,
       source_kingdom: SRC,
+      sovereign_title: 'Emperor',
     }, null, 2) + '\n');
   }
 
@@ -993,6 +994,35 @@ function cmdInit(args) {
   console.log(`   ${genResult.written.length} court subagents in .claude/agents/${genResult.removed.length ? ` (${genResult.removed.length} pruned)` : ''}`);
   console.log('   CLAUDE.md managed block + .claude/settings.json updated; .kingdom/PROJECT.json bound.');
   console.log('   Next: `node .kingdom/kingdom-server.js` for the web, or open Claude Code here and summon a court.');
+}
+
+// ---------------------------------------------------------------------------
+// sovereign
+// ---------------------------------------------------------------------------
+
+// Resolve the project + its .kingdom/ when run inside an init'd project.
+function resolveProjectKingdom() {
+  const root = gen.KINGDOM_ROOT;
+  if (path.basename(root) === '.kingdom') return { dotK: root, projectRoot: path.dirname(root) };
+  if (fs.existsSync(path.join(process.cwd(), '.kingdom'))) {
+    const projectRoot = process.cwd();
+    return { dotK: path.join(projectRoot, '.kingdom'), projectRoot };
+  }
+  return null;
+}
+
+function cmdSovereign(argv) {
+  const loc = resolveProjectKingdom();
+  if (!loc) { console.error("⚠ Run inside an init'd project (a .kingdom/ must exist)."); process.exitCode = 1; return; }
+  const projFile = path.join(loc.dotK, 'PROJECT.json');
+  const proj = readJSON(projFile);
+  if (proj.__missing || proj.__error) { console.log(missingFileNote(projFile)); return; }
+  const title = argv.filter((a) => !a.startsWith('--')).join(' ').trim();
+  if (!title) { console.log(`👑 The Sovereign is styled: ${proj.sovereign_title || 'Emperor'}`); return; }
+  if (!/^[A-Za-z][A-Za-z \-]{0,31}$/.test(title)) { console.error('⚠ Title must be 1–32 letters/spaces/hyphens.'); process.exitCode = 1; return; }
+  proj.sovereign_title = title;
+  writeJSON(projFile, proj);
+  console.log(`👑 The Sovereign shall henceforth be styled: ${title}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -1035,6 +1065,7 @@ async function main() {
       case 'extinct': cmdExtinct(rest); break;
       case 'init': cmdInit(rest); break;
       case 'sync-agents': cmdSyncAgents(); break;
+      case 'sovereign': cmdSovereign(rest); break;
       case 'help':
       case '--help':
       case '-h':
