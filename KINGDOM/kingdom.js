@@ -105,6 +105,8 @@ function cmdHelp() {
     ['extinct ROLE FAMILY [--reason T]', 'Declare a family extinct (skills archived)'],
     ['init [dir] [--reinstall]', 'Install a self-contained Kingdom into a project'],
     ['sync-agents', "Regenerate a project's court after roster changes"],
+    ['sovereign [TITLE]', 'Show or set how the Sovereign is styled (default Emperor)'],
+    ['reign [--hook]', "Accede: bump the Archduke's reign and print the order of operations"],
     ['help', 'Show this banner'],
   ];
   for (const [cmd, desc] of rows) {

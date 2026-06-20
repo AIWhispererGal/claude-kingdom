@@ -86,6 +86,16 @@ into the chat lane, and lights up the **live feed** as it dispatches court subag
 (`🔍 detective-greymantle dispatched → returned`). One turn at a time; **Stop ✋** halts it; **🆕**
 starts a fresh session. Requires the `claude` CLI on your PATH.
 
+## The Reign & The Vow
+
+Inside an init'd project, each session opens with an **accession preamble** (via a SessionStart hook):
+the realm is the **Kingdom of `<repo>`**, the human is the **Sovereign** (styled **Emperor** by default —
+change with `node .kingdom/kingdom.js sovereign Empress`), and the session is **Archduke ClaudeCode `<N>`**,
+the number rising each startup. The Archduke **accepts the quest by vow** before acting; each summoned agent
+**vows to the Kingdom and overtly accepts its charge** — and **may refuse** (an unvowed agent does no work;
+the Archduke then summons another, preferring a sibling family). Run `node .kingdom/kingdom.js sync-agents`
+to refresh an existing project's CLAUDE.md, court, and hook.
+
 ## Map of the realm
 
 | Path | What lives here |
