@@ -56,4 +56,11 @@ assert(/KINGDOM:START/.test(AG.MARKERS.start) && block.includes('detective-greym
 const entries = AG.settingsAllowEntries(['detective-greymantle']);
 assert(entries.includes('Agent(detective-greymantle)') && entries.includes('Read'), 'settings entries include court + base');
 
+// reignPreamble names the realm, the archduke number, and the sovereign
+const pre = AG.reignPreamble({ projectName: 'my-app', archdukeRoman: 'II', sovereignTitle: 'Empress' });
+assert(/KINGDOM OF MY-APP|Kingdom of my-app/i.test(pre), 'preamble names the realm');
+assert(/ARCHDUKE CLAUDECODE II/i.test(pre), 'preamble carries the archduke number');
+assert(/Empress/.test(pre), 'preamble names the sovereign');
+assert(/ACCEDE/.test(pre) && /SUMMON BY VOW/.test(pre), 'preamble states the order of operations');
+
 done();

@@ -1026,6 +1026,40 @@ function cmdSovereign(argv) {
 }
 
 // ---------------------------------------------------------------------------
+// reign
+// ---------------------------------------------------------------------------
+function cmdReign(argv) {
+  const AG = require('./agents/agent_gen.js');
+  const hook = argv.includes('--hook');
+  const loc = resolveProjectKingdom();
+  if (!loc) {
+    if (hook) { process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: '' } }) + '\n'); return; }
+    console.error("⚠ Run inside an init'd project (a .kingdom/ must exist)."); process.exitCode = 1; return;
+  }
+  let sessionId = null;
+  if (hook && !process.stdin.isTTY) {
+    try { const raw = fs.readFileSync(0, 'utf8'); if (raw.trim()) sessionId = JSON.parse(raw).session_id || null; } catch { /* ignore */ }
+  }
+  const reignFile = path.join(loc.dotK, 'reign.json');
+  let reign = readJSON(reignFile);
+  if (reign.__missing || reign.__error || typeof reign.archduke_count !== 'number') {
+    reign = { archduke_count: 0, current_session_id: null, last_accession: null };
+  }
+  if (sessionId == null || sessionId !== reign.current_session_id) {
+    reign.archduke_count += 1;
+    reign.current_session_id = sessionId;
+    reign.last_accession = new Date().toISOString();
+    writeJSON(reignFile, reign);
+  }
+  const proj = readJSON(path.join(loc.dotK, 'PROJECT.json'));
+  const projectName = (!proj.__missing && proj.project_name) || path.basename(loc.projectRoot);
+  const sovereignTitle = (!proj.__missing && proj.sovereign_title) || 'Emperor';
+  const preamble = AG.reignPreamble({ projectName, archdukeRoman: toRoman(reign.archduke_count), sovereignTitle });
+  if (hook) process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: preamble } }) + '\n');
+  else console.log(preamble);
+}
+
+// ---------------------------------------------------------------------------
 // sync-agents
 // ---------------------------------------------------------------------------
 function cmdSyncAgents() {
@@ -1066,6 +1100,7 @@ async function main() {
       case 'init': cmdInit(rest); break;
       case 'sync-agents': cmdSyncAgents(); break;
       case 'sovereign': cmdSovereign(rest); break;
+      case 'reign': cmdReign(rest); break;
       case 'help':
       case '--help':
       case '-h':
