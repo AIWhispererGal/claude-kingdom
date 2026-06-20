@@ -19,7 +19,7 @@ assert(/\ntools: Read, Grep, Glob\n/.test(det.contents), 'detective tools line i
 assert(/\n---\n/.test(det.contents), 'frontmatter is closed');
 assert(/Lineage: GREYMANTLE/.test(det.contents), 'includes its lineage section');
 assert(/Skills I carry/.test(det.contents), 'includes a skills section');
-assert(/My Vow/.test(det.contents), 'includes a vow');
+assert(/Your vow/.test(det.contents), 'includes a vow');
 
 const smith = AG.buildSubagent('BLACKSMITH', 'IRONFORGE');
 assert(/\ntools: Read, Grep, Glob, Write, Edit, Bash\n/.test(smith.contents), 'blacksmith tools include build tools');
@@ -62,5 +62,16 @@ assert(/KINGDOM OF MY-APP|Kingdom of my-app/i.test(pre), 'preamble names the rea
 assert(/ARCHDUKE CLAUDECODE II/i.test(pre), 'preamble carries the archduke number');
 assert(/Empress/.test(pre), 'preamble names the sovereign');
 assert(/ACCEDE/.test(pre) && /SUMMON BY VOW/.test(pre), 'preamble states the order of operations');
+
+// claudeBlock states identities + order of operations + realm + sovereign
+const blk = AG.claudeBlock(['detective-greymantle'], { projectName: 'my-app', sovereignTitle: 'Empress' });
+assert(/Kingdom of my-app/i.test(blk), 'claudeBlock names the realm');
+assert(/Empress/.test(blk), 'claudeBlock names the sovereign');
+assert(/Archduke/i.test(blk) && /ACCEDE/.test(blk) && /SUMMON BY VOW/.test(blk), 'claudeBlock states identities + order of operations');
+assert(/detective-greymantle/.test(blk), 'claudeBlock still lists the court');
+// the vow is overt and refusable
+const vowed = AG.buildSubagent('DETECTIVE', 'GREYMANTLE').contents;
+assert(/vow it to the Kingdom/i.test(vowed), 'subagent vows to the Kingdom');
+assert(/may refuse|MAY refuse/i.test(vowed), 'subagent may refuse its charge');
 
 done();

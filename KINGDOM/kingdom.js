@@ -934,7 +934,10 @@ function refreshCourt(projectRoot, dotK, AGt) {
     throw new Error(`Project REGISTRY.json is missing or malformed${reg.__error ? ': ' + reg.__error : ''}`);
   }
   const court = AGt.listActiveFamilies(reg).map((a) => `${a.role.toLowerCase()}-${a.family.toLowerCase()}`);
-  writeManagedBlock(path.join(projectRoot, 'CLAUDE.md'), AGt.MARKERS.start, AGt.MARKERS.end, AGt.claudeBlock(court));
+  let projMeta = {};
+  try { projMeta = JSON.parse(fs.readFileSync(path.join(dotK, 'PROJECT.json'), 'utf8')); } catch { projMeta = {}; }
+  const claudeOpts = { projectName: projMeta.project_name || path.basename(projectRoot), sovereignTitle: projMeta.sovereign_title || 'Emperor' };
+  writeManagedBlock(path.join(projectRoot, 'CLAUDE.md'), AGt.MARKERS.start, AGt.MARKERS.end, AGt.claudeBlock(court, claudeOpts));
   mergeSettingsAllow(
     path.join(projectRoot, '.claude', 'settings.json'),
     AGt.settingsAllowEntries(court),
