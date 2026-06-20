@@ -34,5 +34,18 @@ const r2 = run(['reign', '--hook'], proj, '{"session_id":"s2"}');
 assert(/Archduke ClaudeCode II\b/i.test(r2), 'new session becomes Archduke II');
 assert(/Empress/.test(r2), 'reign preamble uses the configured sovereign title');
 
+// init wrote a SessionStart hook that runs `reign --hook`, exactly once and idempotently
+const settingsPath = path.join(proj, '.claude', 'settings.json');
+const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+const hooks = (settings.hooks && settings.hooks.SessionStart) || [];
+const cmds = hooks.flatMap((g) => (g.hooks || []).map((h) => h.command));
+assert(cmds.filter((c) => /reign --hook/.test(c)).length === 1, 'init wrote the reign SessionStart hook once');
+run(['sync-agents'], proj);
+const settings2 = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+const cmds2 = (settings2.hooks.SessionStart || []).flatMap((g) => (g.hooks || []).map((h) => h.command));
+assert(cmds2.filter((c) => /reign --hook/.test(c)).length === 1, 'sync-agents keeps the hook at exactly one');
+// and the permissions allow-list is still intact (not clobbered)
+assert(Array.isArray(settings2.permissions.allow) && settings2.permissions.allow.includes('Agent(detective-greymantle)'), 'settings permissions preserved alongside hooks');
+
 fs.rmSync(proj, { recursive: true, force: true });
 done();

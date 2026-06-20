@@ -907,6 +907,17 @@ function mergeSettingsAllow(file, entries, note) {
   fs.writeFileSync(file, JSON.stringify(settings, null, 2) + '\n', 'utf8');
 }
 
+function mergeSettingsHook(file, event, command) {
+  let settings = {};
+  if (fs.existsSync(file)) { try { settings = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { settings = {}; } }
+  if (!settings.hooks) settings.hooks = {};
+  if (!Array.isArray(settings.hooks[event])) settings.hooks[event] = [];
+  const present = settings.hooks[event].some((g) => Array.isArray(g.hooks) && g.hooks.some((h) => h && h.command === command));
+  if (!present) settings.hooks[event].push({ hooks: [{ type: 'command', command }] });
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(settings, null, 2) + '\n', 'utf8');
+}
+
 // ---------------------------------------------------------------------------
 // refreshCourt — shared helper used by both init and sync-agents
 // ---------------------------------------------------------------------------
@@ -929,6 +940,7 @@ function refreshCourt(projectRoot, dotK, AGt) {
     AGt.settingsAllowEntries(court),
     'Managed by the Living Kingdom. Broaden permissions here as you trust the realm.'
   );
+  mergeSettingsHook(path.join(projectRoot, '.claude', 'settings.json'), 'SessionStart', 'node .kingdom/kingdom.js reign --hook');
   return { genResult, AGt, court };
 }
 
