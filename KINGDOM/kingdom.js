@@ -105,6 +105,8 @@ function cmdHelp() {
     ['extinct ROLE FAMILY [--reason T]', 'Declare a family extinct (skills archived)'],
     ['init [dir] [--reinstall]', 'Install a self-contained Kingdom into a project'],
     ['sync-agents', "Regenerate a project's court after roster changes"],
+    ['sovereign [TITLE]', 'Show or set how the Sovereign is styled (default Emperor)'],
+    ['reign [--hook]', "Accede: bump the Archduke's reign and print the order of operations"],
     ['help', 'Show this banner'],
   ];
   for (const [cmd, desc] of rows) {
@@ -907,6 +909,17 @@ function mergeSettingsAllow(file, entries, note) {
   fs.writeFileSync(file, JSON.stringify(settings, null, 2) + '\n', 'utf8');
 }
 
+function mergeSettingsHook(file, event, command) {
+  let settings = {};
+  if (fs.existsSync(file)) { try { settings = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { settings = {}; } }
+  if (!settings.hooks) settings.hooks = {};
+  if (!Array.isArray(settings.hooks[event])) settings.hooks[event] = [];
+  const present = settings.hooks[event].some((g) => Array.isArray(g.hooks) && g.hooks.some((h) => h && h.command === command));
+  if (!present) settings.hooks[event].push({ hooks: [{ type: 'command', command }] });
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(settings, null, 2) + '\n', 'utf8');
+}
+
 // ---------------------------------------------------------------------------
 // refreshCourt — shared helper used by both init and sync-agents
 // ---------------------------------------------------------------------------
@@ -923,12 +936,16 @@ function refreshCourt(projectRoot, dotK, AGt) {
     throw new Error(`Project REGISTRY.json is missing or malformed${reg.__error ? ': ' + reg.__error : ''}`);
   }
   const court = AGt.listActiveFamilies(reg).map((a) => `${a.role.toLowerCase()}-${a.family.toLowerCase()}`);
-  writeManagedBlock(path.join(projectRoot, 'CLAUDE.md'), AGt.MARKERS.start, AGt.MARKERS.end, AGt.claudeBlock(court));
+  let projMeta = {};
+  try { projMeta = JSON.parse(fs.readFileSync(path.join(dotK, 'PROJECT.json'), 'utf8')); } catch { projMeta = {}; }
+  const claudeOpts = { projectName: projMeta.project_name || path.basename(projectRoot), sovereignTitle: projMeta.sovereign_title || 'Emperor' };
+  writeManagedBlock(path.join(projectRoot, 'CLAUDE.md'), AGt.MARKERS.start, AGt.MARKERS.end, AGt.claudeBlock(court, claudeOpts));
   mergeSettingsAllow(
     path.join(projectRoot, '.claude', 'settings.json'),
     AGt.settingsAllowEntries(court),
     'Managed by the Living Kingdom. Broaden permissions here as you trust the realm.'
   );
+  mergeSettingsHook(path.join(projectRoot, '.claude', 'settings.json'), 'SessionStart', 'node .kingdom/kingdom.js reign --hook');
   return { genResult, AGt, court };
 }
 
@@ -983,6 +1000,7 @@ function cmdInit(args) {
       initialized_at: new Date().toISOString(),
       kingdom_version: AGt.KINGDOM_VERSION,
       source_kingdom: SRC,
+      sovereign_title: 'Emperor',
     }, null, 2) + '\n');
   }
 
@@ -993,6 +1011,69 @@ function cmdInit(args) {
   console.log(`   ${genResult.written.length} court subagents in .claude/agents/${genResult.removed.length ? ` (${genResult.removed.length} pruned)` : ''}`);
   console.log('   CLAUDE.md managed block + .claude/settings.json updated; .kingdom/PROJECT.json bound.');
   console.log('   Next: `node .kingdom/kingdom-server.js` for the web, or open Claude Code here and summon a court.');
+}
+
+// ---------------------------------------------------------------------------
+// sovereign
+// ---------------------------------------------------------------------------
+
+// Resolve the project + its .kingdom/ when run inside an init'd project.
+function resolveProjectKingdom() {
+  const root = gen.KINGDOM_ROOT;
+  if (path.basename(root) === '.kingdom') return { dotK: root, projectRoot: path.dirname(root) };
+  if (fs.existsSync(path.join(process.cwd(), '.kingdom'))) {
+    const projectRoot = process.cwd();
+    return { dotK: path.join(projectRoot, '.kingdom'), projectRoot };
+  }
+  return null;
+}
+
+function cmdSovereign(argv) {
+  const loc = resolveProjectKingdom();
+  if (!loc) { console.error("⚠ Run inside an init'd project (a .kingdom/ must exist)."); process.exitCode = 1; return; }
+  const projFile = path.join(loc.dotK, 'PROJECT.json');
+  const proj = readJSON(projFile);
+  if (proj.__missing || proj.__error) { console.log(missingFileNote(projFile)); return; }
+  const title = argv.filter((a) => !a.startsWith('--')).join(' ').trim();
+  if (!title) { console.log(`👑 The Sovereign is styled: ${proj.sovereign_title || 'Emperor'}`); return; }
+  if (!/^[A-Za-z][A-Za-z \-]{0,31}$/.test(title)) { console.error('⚠ Title must be 1–32 letters/spaces/hyphens.'); process.exitCode = 1; return; }
+  proj.sovereign_title = title;
+  writeJSON(projFile, proj);
+  console.log(`👑 The Sovereign shall henceforth be styled: ${title}`);
+}
+
+// ---------------------------------------------------------------------------
+// reign
+// ---------------------------------------------------------------------------
+function cmdReign(argv) {
+  const AG = require('./agents/agent_gen.js');
+  const hook = argv.includes('--hook');
+  const loc = resolveProjectKingdom();
+  if (!loc) {
+    if (hook) { process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: '' } }) + '\n'); return; }
+    console.error("⚠ Run inside an init'd project (a .kingdom/ must exist)."); process.exitCode = 1; return;
+  }
+  let sessionId = null;
+  if (hook && !process.stdin.isTTY) {
+    try { const raw = fs.readFileSync(0, 'utf8'); if (raw.trim()) sessionId = JSON.parse(raw).session_id || null; } catch { /* ignore */ }
+  }
+  const reignFile = path.join(loc.dotK, 'reign.json');
+  let reign = readJSON(reignFile);
+  if (reign.__missing || reign.__error || typeof reign.archduke_count !== 'number') {
+    reign = { archduke_count: 0, current_session_id: null, last_accession: null };
+  }
+  if (sessionId == null || sessionId !== reign.current_session_id) {
+    reign.archduke_count += 1;
+    reign.current_session_id = sessionId;
+    reign.last_accession = new Date().toISOString();
+    writeJSON(reignFile, reign);
+  }
+  const proj = readJSON(path.join(loc.dotK, 'PROJECT.json'));
+  const projectName = (!proj.__missing && proj.project_name) || path.basename(loc.projectRoot);
+  const sovereignTitle = (!proj.__missing && proj.sovereign_title) || 'Emperor';
+  const preamble = AG.reignPreamble({ projectName, archdukeRoman: toRoman(reign.archduke_count), sovereignTitle });
+  if (hook) process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: preamble } }) + '\n');
+  else console.log(preamble);
 }
 
 // ---------------------------------------------------------------------------
@@ -1035,6 +1116,8 @@ async function main() {
       case 'extinct': cmdExtinct(rest); break;
       case 'init': cmdInit(rest); break;
       case 'sync-agents': cmdSyncAgents(); break;
+      case 'sovereign': cmdSovereign(rest); break;
+      case 'reign': cmdReign(rest); break;
       case 'help':
       case '--help':
       case '-h':
