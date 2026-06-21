@@ -32,7 +32,7 @@ This folder is not yet a git repo; the plan commits after each task. Skip this t
 - [ ] **Step 1: Init + first commit**
 
 ```bash
-cd /mnt/c/Users/mgall/OneDrive/Desktop/CLAUDE_KINGDOM
+cd /path/to/claude-kingdom
 git init
 printf 'node_modules/\n*.log\n' > .gitignore
 git add -A
