@@ -16,6 +16,41 @@ You **summon a court**: a set of specialized agents (DETECTIVE, BLACKSMITH, CHIR
 drawn from a **family lineage** with its own philosophy, learned skills, and track record. The
 Kingdom remembers every session, every honor, and every family's rise and fall.
 
+## Install from GitHub
+
+Three ways to get the Kingdom into a project — pick one:
+
+**A. One-shot (no clone):**
+```bash
+cd your-project
+npx github:AIWhispererGal/claude-kingdom init .
+```
+
+**B. Global command:**
+```bash
+npm install -g github:AIWhispererGal/claude-kingdom
+cd your-project
+kingdom init .
+```
+
+**C. Clone:**
+```bash
+git clone https://github.com/AIWhispererGal/claude-kingdom.git ~/claude-kingdom
+cd your-project
+node ~/claude-kingdom/KINGDOM/kingdom.js init .
+```
+
+To upgrade an existing project's Kingdom code without losing its history:
+```bash
+kingdom init . --reinstall          # global install
+# or: node ~/claude-kingdom/KINGDOM/kingdom.js init . --reinstall   # clone
+```
+Your Chronicle, honors, family lineages, registry, and `PROJECT.json` are all preserved.
+
+For the full install and update guide, see the [repo README](https://github.com/AIWhispererGal/claude-kingdom#readme).
+
+---
+
 ## Quick start
 
 ```bash
