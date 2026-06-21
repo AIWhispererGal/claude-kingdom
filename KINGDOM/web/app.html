@@ -589,6 +589,7 @@
       <div class="modal-actions">
         <button class="minor" id="copyBtn">Copy</button>
         <button class="minor" id="downloadBtn">Download .md</button>
+        <button class="minor" id="sendArchdukeBtn">⚜ Send to the Archduke</button>
         <button class="minor" id="closeBtn" style="background:#6b2b25;">Close</button>
       </div>
     </div>
@@ -992,6 +993,22 @@ document.getElementById("downloadBtn").addEventListener("click", function () {
   a.href = url; a.download = summonsPre.dataset.file || "summons.md";
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
+});
+
+/* Send the generated summons brief straight into the Archduke chat lane. */
+async function sendSummonsToArchduke(summonsText) {
+  // 1. Close the Summon modal using the page's backdrop variable.
+  backdrop.classList.remove("open");
+  // 2. Switch to the Throne Room tab using the page's showTab function.
+  showTab("throne");
+  // 3. Put the brief in the chat input and send it.
+  var input = document.getElementById("archduke-input");
+  if (input) input.value = summonsText;
+  if (typeof sendToArchduke === "function") sendToArchduke();
+}
+
+document.getElementById("sendArchdukeBtn").addEventListener("click", function () {
+  sendSummonsToArchduke(summonsPre.textContent);
 });
 
 /* ======================================================================
