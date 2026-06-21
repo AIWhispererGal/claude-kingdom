@@ -12,8 +12,10 @@
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const readline = require('readline');
+const { spawnSync } = require('child_process');
 
 const gen = require('./summons/generator');
 const {
@@ -22,6 +24,9 @@ const {
   loadRegistry, listFamilySkills, countFamilySkills,
   readLineage, generateSummons,
 } = gen;
+
+const KINGDOM_REPO = 'https://github.com/AIWhispererGal/claude-kingdom.git';
+const KINGDOM_REF = 'main';
 
 // ---------------------------------------------------------------------------
 // Small shared helpers.
@@ -105,6 +110,7 @@ function cmdHelp() {
     ['extinct ROLE FAMILY [--reason T]', 'Declare a family extinct (skills archived)'],
     ['init [dir] [--reinstall]', 'Install a self-contained Kingdom into a project'],
     ['sync-agents', "Regenerate a project's court after roster changes"],
+    ['update [--ref B] [--from DIR]', 'Fetch the latest Kingdom from GitHub and reinstall (memory kept)'],
     ['sovereign [TITLE]', 'Show or set how the Sovereign is styled (default Emperor)'],
     ['reign [--hook]', "Accede: bump the Archduke's reign and print the order of operations"],
     ['help', 'Show this banner'],
@@ -1001,6 +1007,8 @@ function cmdInit(args) {
       kingdom_version: AGt.KINGDOM_VERSION,
       source_kingdom: SRC,
       sovereign_title: 'Emperor',
+      repo_url: KINGDOM_REPO,
+      repo_ref: KINGDOM_REF,
     }, null, 2) + '\n');
   }
 
@@ -1077,6 +1085,44 @@ function cmdReign(argv) {
 }
 
 // ---------------------------------------------------------------------------
+// update
+// ---------------------------------------------------------------------------
+function cmdUpdate(argv) {
+  const { flags } = parseArgs(argv);
+  const loc = resolveProjectKingdom();
+  if (!loc) { console.error("⚠ Run `update` inside an installed project (a .kingdom/ must exist)."); process.exitCode = 1; return; }
+  const proj = readJSON(path.join(loc.dotK, 'PROJECT.json'));
+  const repo = flags.repo || (!proj.__missing && proj.repo_url) || KINGDOM_REPO;
+  const ref = flags.ref || (!proj.__missing && proj.repo_ref) || KINGDOM_REF;
+
+  let srcRoot, tmp = null;
+  if (flags.from) {
+    const f = path.resolve(String(flags.from));
+    srcRoot = fs.existsSync(path.join(f, 'kingdom.js')) ? f : path.join(f, 'KINGDOM');
+    if (!fs.existsSync(path.join(srcRoot, 'kingdom.js'))) { console.error(`⚠ --from ${f} has no kingdom.js`); process.exitCode = 1; return; }
+    console.log(`🔁 Updating from local source: ${srcRoot}`);
+  } else {
+    tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'kingdom-update-'));
+    console.log(`⏳ Fetching the latest Kingdom from ${repo} (${ref})…`);
+    const clone = spawnSync('git', ['clone', '--depth', '1', '--branch', ref, repo, tmp], { encoding: 'utf8' });
+    if (clone.status !== 0) {
+      console.error('⚠ Could not fetch from GitHub. Is `git` installed and the repo/ref reachable?');
+      console.error(`  Manual fallback:  npx -y github:AIWhispererGal/claude-kingdom@${ref} init . --reinstall`);
+      if (clone.stderr) console.error('  ' + String(clone.stderr).trim().split('\n').slice(-1)[0]);
+      fs.rmSync(tmp, { recursive: true, force: true }); process.exitCode = 1; return;
+    }
+    srcRoot = path.join(tmp, 'KINGDOM');
+    if (!fs.existsSync(path.join(srcRoot, 'kingdom.js'))) { console.error('⚠ Cloned repo has an unexpected layout (no KINGDOM/kingdom.js).'); fs.rmSync(tmp, { recursive: true, force: true }); process.exitCode = 1; return; }
+  }
+
+  console.log('🔁 Reinstalling the latest code over your project (memory preserved)…');
+  const res = spawnSync('node', [path.join(srcRoot, 'kingdom.js'), 'init', loc.projectRoot, '--reinstall'], { stdio: 'inherit' });
+  if (tmp) fs.rmSync(tmp, { recursive: true, force: true });
+  if (res.status !== 0) { console.error('⚠ Update failed during reinstall.'); process.exitCode = 1; return; }
+  console.log('✅ The Kingdom is updated. Your Chronicle, honors, families, registry, and reign are intact.');
+}
+
+// ---------------------------------------------------------------------------
 // sync-agents
 // ---------------------------------------------------------------------------
 function cmdSyncAgents() {
@@ -1118,6 +1164,7 @@ async function main() {
       case 'sync-agents': cmdSyncAgents(); break;
       case 'sovereign': cmdSovereign(rest); break;
       case 'reign': cmdReign(rest); break;
+      case 'update': cmdUpdate(rest); break;
       case 'help':
       case '--help':
       case '-h':

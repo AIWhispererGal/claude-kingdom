@@ -89,6 +89,16 @@ The living rules: **[`KINGDOM/DOCTRINE.md`](KINGDOM/DOCTRINE.md)**
 There are two layers to updating: **getting the latest Kingdom code** and **upgrading a project
 you already installed into**. You need both.
 
+### Easiest: one command, from inside your project
+
+```bash
+node .kingdom/kingdom.js update
+```
+This fetches the latest Kingdom from GitHub and reinstalls it over your project, **keeping all your
+memory** (Chronicle, honors, families, registry, reign, sovereign title). Requires `git` on your PATH;
+if you don't have git, use the `npx … init . --reinstall` method below. Power users: `--ref <branch>`
+updates from a specific branch, and `--from <dir>` updates from a local clone instead of GitHub.
+
 ### 1. Get the latest Kingdom code
 
 - **If you used the global install (B):** run `npm install -g github:AIWhispererGal/claude-kingdom`

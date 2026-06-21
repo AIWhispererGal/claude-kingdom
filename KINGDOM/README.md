@@ -42,6 +42,7 @@ node ~/claude-kingdom/KINGDOM/kingdom.js init .
 
 To upgrade an existing project's Kingdom code without losing its history:
 ```bash
+node .kingdom/kingdom.js update     # easiest: fetches from GitHub + reinstalls (memory kept)
 kingdom init . --reinstall          # global install
 # or: node ~/claude-kingdom/KINGDOM/kingdom.js init . --reinstall   # clone
 ```
