@@ -28,21 +28,97 @@ Both on purpose.
   numbered per startup, 🛡️ agents = the **Court**) and a **voluntary, refusable** vow ceremony, injected each
   session via a SessionStart hook.
 
-## 🚀 Quickstart
+## 🚀 Install
+
+Pick whichever method fits you best. All three end up with the Kingdom running inside your project.
+
+### A. One-shot, no clone (easiest to try)
 
 ```bash
-# Install the Kingdom into a project (run once, from the project you want it in):
-node /path/to/claude-kingdom/KINGDOM/kingdom.js init .
+cd your-project
+npx github:AIWhispererGal/claude-kingdom init .
+```
 
-# Then everything is local to that project:
+`npx` fetches the Kingdom from GitHub and immediately runs `init .` — no installation step, nothing
+left on your machine afterward. Great for kicking the tyres before you commit to anything.
+
+### B. Global command (best for regular use)
+
+```bash
+npm install -g github:AIWhispererGal/claude-kingdom
+cd your-project
+kingdom init .
+```
+
+This gives you a permanent `kingdom` command you can use from any project. Run `npm install -g
+github:AIWhispererGal/claude-kingdom` again whenever you want to update to the latest version.
+
+### C. Clone (best if you want to read or hack the source)
+
+```bash
+git clone https://github.com/AIWhispererGal/claude-kingdom.git ~/claude-kingdom
+cd your-project
+node ~/claude-kingdom/KINGDOM/kingdom.js init .
+```
+
+Cloning lets you browse the code, tweak it, and pull updates with a plain `git pull`.
+
+---
+
+### After installing into a project
+
+`init .` copies a self-contained Kingdom into `.kingdom/` and writes real Claude Code subagents
+into `.claude/agents/`. From that point on, everything lives locally in your project — no global
+tool required:
+
+```bash
 node .kingdom/kingdom.js families        # the family tree
 node .kingdom/kingdom.js medals          # the Hall of Honors
+node .kingdom/kingdom.js summon          # generate a vow-bearing quest prompt
 node .kingdom/kingdom-server.js          # the live web Throne Room → http://localhost:8080
 claude                                   # your session is now the Archduke — give it a quest
 ```
 
 Full docs and command reference: **[`KINGDOM/README.md`](KINGDOM/README.md)** ·
 The living rules: **[`KINGDOM/DOCTRINE.md`](KINGDOM/DOCTRINE.md)**
+
+---
+
+## 🔄 Updating & reinstalling
+
+There are two layers to updating: **getting the latest Kingdom code** and **upgrading a project
+you already installed into**. You need both.
+
+### 1. Get the latest Kingdom code
+
+- **If you used the global install (B):** run `npm install -g github:AIWhispererGal/claude-kingdom`
+  again — same command, it just overwrites with the latest.
+- **If you cloned (C):** `cd ~/claude-kingdom && git pull`.
+- **If you used npx (A):** nothing to update centrally — npx always fetches a fresh copy when you
+  run it. If you want to force the very latest commit rather than a cached version, use:
+  `npx github:AIWhispererGal/claude-kingdom@main …`
+
+### 2. Upgrade a project you already installed into
+
+Once you have the latest code, push it into your existing project:
+
+```bash
+cd your-project
+kingdom init . --reinstall                                                  # global install (B)
+# or:  node ~/claude-kingdom/KINGDOM/kingdom.js init . --reinstall         # clone (C)
+```
+
+`--reinstall` refreshes the engine, the subagent definitions, the `CLAUDE.md` block, and the
+SessionStart hook — **while keeping all your project's memory intact.** Your Chronicle
+(`history/`), honors, evolved family lineages, the registry, and your reign count and sovereign
+title in `PROJECT.json` are untouched. It will not wipe your kingdom's history.
+
+For a lighter refresh — when you just founded or retired a family and want the court to reflect
+that without a full code upgrade — use:
+
+```bash
+node .kingdom/kingdom.js sync-agents
+```
 
 ## 🗺️ Repo layout
 
