@@ -86,6 +86,9 @@ into the chat lane, and lights up the **live feed** as it dispatches court subag
 (`🔍 detective-greymantle dispatched → returned`). One turn at a time; **Stop ✋** halts it; **🆕**
 starts a fresh session. Requires the `claude` CLI on your PATH.
 
+The **Summon** tab can hand its brief straight to the live Archduke (⚜ *Send to the Archduke*), and when a
+Throne Room reign ends the **Archivist auto-files it into the Chronicle** — no manual `record` needed.
+
 ## The Reign & The Vow
 
 Inside an init'd project, each session opens with an **accession preamble** (via a SessionStart hook):

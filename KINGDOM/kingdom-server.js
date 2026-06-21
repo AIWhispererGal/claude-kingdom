@@ -133,19 +133,53 @@ const ROLE_EMOJI = (() => {
   return m;
 })();
 
+let currentTurn = null;
+const IS_INSTALLED = path.basename(ROOT) === '.kingdom';
+
+// The Archivist files a Throne Room reign into the Chronicle. Only for a real installed project.
+function recordReign(turn, ev) {
+  if (!IS_INSTALLED || !turn) return;
+  try {
+    const sessions = G.readJSON(G.PATHS.sessions);
+    if (sessions.__missing || sessions.__error || !Array.isArray(sessions.sessions)) return;
+    const nums = sessions.sessions.map((s) => (typeof s.session === 'number' ? s.session : 0));
+    const next = Math.max(0, ...nums) + 1;
+    const reign = G.readJSON(path.join(ROOT, 'reign.json'));
+    const count = reign && typeof reign.archduke_count === 'number' && reign.archduke_count > 0 ? reign.archduke_count : 1;
+    const noble = `Archduke ClaudeCode ${G.toRoman(count)}`;
+    const court = [...new Set(turn.court || [])];
+    const entry = {
+      session: next, noble, rank: 'ARCHDUKE',
+      quest: String(turn.quest || '').slice(0, 200), court,
+      outcome: ev && ev.ok === false ? 'HALTED' : 'COMPLETE',
+      medals: [], vow_violations: [],
+      notes: 'Auto-filed by the Archivist from a Throne Room reign.',
+    };
+    sessions.sessions.push(entry);
+    G.writeJSON(G.PATHS.sessions, sessions);
+    emit({ icon: '📚', kind: 'chronicle', title: `The Archivist files the testament — Session ${next}`, detail: `${noble}${court.length ? ' · court: ' + court.join(', ') : ''}` });
+  } catch (_) { /* non-fatal */ }
+}
+
 // Map a normalized Regent event onto the SSE feed.
 function archdukeEmit(ev) {
   if (ev.kind === 'archduke-text') return emit({ icon: '👑', kind: 'archduke-text', title: ev.text, detail: '' });
   if (ev.kind === 'subagent-dispatch') {
     const role = String(ev.name).split('-')[0].toUpperCase();
-    return emit({ icon: ROLE_EMOJI[role] || '•', kind: 'subagent-dispatch', title: `${ev.name} dispatched`, detail: ev.task || '' });
+    const out = emit({ icon: ROLE_EMOJI[role] || '•', kind: 'subagent-dispatch', title: `${ev.name} dispatched`, detail: ev.task || '' });
+    if (currentTurn) currentTurn.court.push(ev.name);
+    return out;
   }
   if (ev.kind === 'subagent-return') {
     const role = String(ev.name).split('-')[0].toUpperCase();
     return emit({ icon: ROLE_EMOJI[role] || '•', kind: 'subagent-return', title: `${ev.name} returned`, detail: ev.summary || '' });
   }
   if (ev.kind === 'tool-use') return emit({ icon: '🛠️', kind: 'tool-use', title: ev.tool, detail: ev.summary || '' });
-  if (ev.kind === 'turn-done') return emit({ icon: '✅', kind: 'turn-done', title: 'The Archduke rests', detail: ev.cost != null ? `cost $${ev.cost}` : '' });
+  if (ev.kind === 'turn-done') {
+    const out = emit({ icon: '✅', kind: 'turn-done', title: 'The Archduke rests', detail: ev.cost != null ? `cost $${ev.cost}` : '' });
+    if (currentTurn) { recordReign(currentTurn, ev); currentTurn = null; }
+    return out;
+  }
   if (ev.kind === 'error') return emit({ icon: '⚠️', kind: 'archduke-error', title: 'The Archduke faltered', detail: ev.message || '' });
 }
 
@@ -333,6 +367,7 @@ const server = http.createServer(async (req, res) => {
       if (!text) return sendJSON(res, 400, { ok: false, error: 'empty message' });
       if (regent.busy) return sendJSON(res, 409, { ok: false, busy: true });
       emit({ icon: '🗣️', kind: 'archduke-say', title: 'You address the Archduke', detail: text });
+      currentTurn = { quest: text, court: [] };
       regent.say(text, archdukeEmit); // fire-and-forget; events stream over SSE
       return sendJSON(res, 200, { ok: true, started: true });
     } catch (e) {
